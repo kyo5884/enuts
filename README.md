@@ -1,4 +1,4 @@
 enuts
 ====
 
-enuts is desktop client for [pnut.io](http://pnut.io/)
+enuts is a desktop client for [pnut.io](http://pnut.io/)
