@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <script src="lib/jquery-3.1.1.min.js"></script>
+        <script src="lib/jquery.easing.1.3.js"></script>
+        <script src="lib/velocity.min.js"></script>
+        <script src="lib/autosize.min.js"></script>
+        <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
+        <script>
+            window.jQuery = window.$ = require('./lib/jquery-3.1.1.min.js');
+            window.velocity = require("./lib/velocity.min.js");
+            window.autosize = require("./lib/autosize.min.js");
+            const shell = require("electron").shell;
+            const ipcRenderer = require("electron").ipcRenderer;
+            const app = require("electron").remote.app;
+            const Config = require("electron-store");
+            const store = new Config();
+            
+            var token;
+            var myUserId;
+            var selectedTab = 0;
+            var latestStreamPostId, latestGlobalPostId, latestMentionsPostId, latestInteractionsId = 0;
+            var irtPostId;
+
+            $(document).ready(function(){
+
+                autosize($("#composeTextArea"));
+
+                //init layout
+                $(window).resize(function(){
+                    if (process.platform == "darwin") {
+                        $("#innerComposeScreen").width(window.innerWidth - 72);
+                    } else {
+                        $("#innerComposeScreen").width(window.innerWidth - 90);
+                    }
+                });
+
+                $(window).resize();
+
+                //titlebar
+                if (process.platform == "darwin") {
+                    $("#titlebar-edge").css({right: "11px"});
+                } else {
+                    $("#titlebar-center").css({
+                        marginLeft: "40px",
+                        textAlign: "left",
+                        paddingLeft: "8px",
+                        borderLeft: "1px solid #bbb"
+                    });
+                    $("#titlebar").css({backgroundColor: "#000"});
+                    $("#titlebar-edge").css({left: "11px"});
+                    $("body").append(
+                        '<div id="windowControl">' +
+                            '<span id="winMinimize" class="windowControlButton">' + 
+                                '<svg x="0px" y="0px" viewBox="0 0 10 10"><rect fill="#ffffff" width="10" height="1" transform="translate(0, 5)"></rect></svg>' +
+                            '</span>' +
+                            '<span id="winMaximize" class="windowControlButton">' + 
+                                '<svg class="fullscreen-svg" x="0px" y="0px" viewBox="0 0 10 10"><path fill="#ffffff" d="M 0 0 L 0 10 L 10 10 L 10 0 L 0 0 z M 1 1 L 9 1 L 9 9 L 1 9 L 1 1 z "/></svg>' +
+                            '</span>' +
+                            '<span id="winClose" class="windowControlButton">' +
+                                '<svg x="0px" y="0px" viewBox="0 0 10 10"><polygon fill="#ffffff" points="10,1 9,0 5,4 1,0 0,1 4,5 0,9 1,10 5,6 9,10 10,9 6,5"></polygon></svg>' +
+                            '</span>' +
+                        '</div>'
+                    );
+                }
+
+                $(document).on("click", "#winClose", function() {
+                    window.close();
+                });
+                $(document).on("click", "#winMaximize", function() {
+                    ipcRenderer.send("winMaximize");
+                });
+                $(document).on("click", "#winMinimize", function() {
+                    ipcRenderer.send("winMinimize");
+                });
+
+
+                //HIDDEN COMMAND!
+
+                if (store.get("darkmode", false)) {
+                    $("body").addClass("darkmode");
+                }
+
+                var input = [];
+                var command = [38,38,40,40,37,39,37,39,66,65];
+
+                $(window).keyup(function(e){
+                    input.push(e.keyCode);
+
+                    if (input.toString().indexOf(command) >= 0) {
+
+                        if (store.get("darkmode", false) == false) {
+                            store.set("darkmode", true);
+                            $("body").addClass("darkmode");
+                            $("#hiddenFeatureNotify").velocity("slideDown");
+                            $("#hiddenFeatureNotify").velocity("fadeOut", {duration: 3000, delay: 3000});
+                        } else {
+                            store.set("darkmode", false);
+                            $("body").removeClass("darkmode");
+                        }
+                        input = [];
+                    }
+                });
+
+                //----
+
+                setInterval("getStream('stream')", 30000);
+                setInterval("getStream('mentions')", 30000);
+                setInterval("getStream('global')", 30000);
+                setInterval("getInteractions()", 30000);
+
+                if (store.get("updateCheck", true)) {
+                    updateCheck();
+                }
+
+                tabSelect(store.get("selectedTab", 0));
+
+                function updateCheck() {
+                    var myVersion = app.getVersion();
+                    var newVersion;
+
+                    $.get({
+                        url: "http://kyo5884.tk/enuts/version.txt",
+                        async: false,
+                        cache: false
+                    }, function(data) {
+                        newVersion = data;
+                        console.log(newVersion);
+
+                        if (myVersion != newVersion) {
+                            $("#updateNotifyNewVersion").text(newVersion);
+                            $("#updateNotify").velocity("slideDown");
+                        }
+                    });
+                }
+
+                $("#updateNotifyClose").click(function() {
+                   $("#updateNotify").velocity("slideUp");
+                });
+
+
+
+
+                setInterval(function() {
+                    for (var i = 0; $(".post").length > i; i++) {
+                        var relTime = getRelativeDate($(".post:eq(" + i + ")").attr("post_created_at"));
+                        $(".post:eq(" + i + ") .postRelDateText").text(relTime);
+                    }
+                }, 10000);
+
+                $("#titlebar-center .titlebar-button").click(function(){
+                    tabSelect($(this).index());
+                });
+
+                $(document).on("click", ".usericon, .username", function() {
+                    var username = "@" + $(this).parents(".post").find(".username").text();
+                    tabSelect(4, username);
+                });
+                
+                $(document).on("click", "span[itemprop=mention]", function() {
+                    var username = $(this).text();
+                    tabSelect(4, username);
+                });
+
+                $("#windowContents").scroll(function() {
+                    if (140 - $("#windowContents").scrollTop() >= 40) {
+                        $("#profileHeaderImage").height(140 - $("#windowContents").scrollTop());
+                    } else {
+                        $("#profileHeaderImage").height(40);
+                    }
+                });
+
+
+
+
+
+                ipcRenderer.on("menu", (e, msg) => {
+                    switch(msg) {
+                        case "new":
+                            openComposeScreen();
+                            break;
+                        case "stream":
+                            tabSelect(0);
+                            break;
+                        case "mentions":
+                            tabSelect(1);
+                            break;
+                        case "interactions":
+                            tabSelect(2);
+                            break;
+                        case "global":
+                            tabSelect(3);
+                            break;
+                        case "profile":
+                            tabSelect(4);
+                            break;
+                    }
+                });
+
+                $("#composeButton").click(function(){
+                    openComposeScreen();
+                });
+
+                $("#composeTextArea").bind('keydown keyup keypress change',function(){
+                    var remain = 256 - $(this).val().length;
+                    $("#composeCharRemain").text(remain);
+                    if (remain < 0) {
+                        $("#composeCharRemain").css("color", "red");
+                    } else {
+                        $("#composeCharRemain").css("color", "#777");
+                    }
+
+                    if ($(".postthread").length) {
+                        $(".postthread").css({marginTop: $("#composeScreen").outerHeight() + "px"});
+                    }
+                });
+
+                $("#composeTextArea").keydown(function(e){
+                    if (e.keyCode == 27) {
+                        closeComposeScreen();
+                    }
+                    if (e.metaKey || e.ctrlKey) {
+                        if (e.keyCode == 13) {
+                            composePost();
+                        }
+                    }
+                });
+
+                $("#composePostButton").click(function(){
+                    composePost();
+                });
+
+                $("#composeCancelButton").click(function(){
+                    closeComposeScreen();
+                });
+
+
+                $(document).on("mouseenter", ".post", function() {
+                    $($(this).find(".postDateText")).hide();
+                    $($(this).find(".postcontrol")).show();
+                });
+                $(document).on("mouseleave", ".post", function() {
+                    $($(this).find(".postcontrol")).hide();
+                    $($(this).find(".postDateText")).show();
+                });
+                
+                $(document).on('click', 'a[href^="http"]', function(event) {
+                    event.preventDefault();
+                    shell.openExternal(this.href);
+                });
+
+                $(document).on("dblclick", ".post", function() {
+                    getConversations($(this).attr("post_id"));
+                });
+
+                $(document).on("click", ".post-interaction .posttext", function() {
+                    getConversations($(this).parents(".post").attr("post_id"));
+                });
+
+                $(document).on("click", ".postDetailButton", function() {
+                    getConversations($(this).parents(".post").attr("post_id"));
+                });
+
+                function getConversations(id) {
+                    $.ajax({
+                        url: "https://api.pnut.io/v0/posts/" + id + "/thread",
+                        type: "GET",
+                        headers: {
+                            Authorization: "Bearer " + token
+                        },
+                        data: {
+                            include_post_raw: 1
+                        },
+                        success: function(result) {
+                            console.log(result);
+                        
+                            var postDetailHtml = "";
+                            if (result.data.length) {
+                                for (var i in result.data) {
+                                    if (!result.data[i].is_deleted) {
+                                        var postDate = new Date(result.data[i].created_at).toLocaleString();
+                                        var postRelativeDate = getRelativeDate(postDate);
+                                        var postImage = "";
+
+                                        var deleteButton, postclass ="";
+
+                                        if (result.data[i].user.id == myUserId) {
+                                            postclass = postclass + " post-mypost";
+                                        } else {
+                                            deleteButton = "";
+                                        }
+
+                                        if (result.data[i].you_bookmarked) {
+                                            postclass = postclass + " post-bookmarked";
+                                        }
+
+                                        if (result.data[i].you_reposted) {
+                                            postclass = postclass + " post-reposted";
+                                        }
+
+                                        if ("raw" in result.data[i]) {
+                                            if (result.data[i].raw.length) {
+                                                for (var j in result.data[i].raw) {
+                                                    if (result.data[i].raw[j].value.type == "photo") {
+                                                        var imgUrl = result.data[i].raw[j].value.url;
+                                                        postImage = '<a href="' + imgUrl + '"><img class="postimage" src="' + imgUrl + '"></a><br>';
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        if (result.data[i].content.entities.links.length) {
+                                            for (var j in result.data[i].content.entities.links) {
+                                                var url = result.data[i].content.entities.links[j].link;
+                                                if (url.match(/.*\.png|.*\.jpeg|.*\.jpg|.*\.gif/)) {
+                                                    postImage = '<a href="' + url + '"><img class="postimage" src="' + url + '"></a><br>';
+                                                }
+                                            }
+                                        }
+
+                                        if (result.data[i].id != id) {
+                                            postclass = postclass + " postthread-mentions";
+                                        }
+
+                                        postDetailHtml = postDetailHtml + 
+                                        '<div class="post ' + postclass + '" post_id=' + result.data[i].id + ' post_created_at="' + result.data[i].created_at + '">' +
+                                            '<img class="usericon" src="' + result.data[i].user.content.avatar_image.link + '">' +
+                                            '<div class="postcontent">' +
+                                                '<div class="usernameArea">' +
+                                                    '<span class="username">' + result.data[i].user.username + '</span>' +
+                                                '</div>' +
+                                                '<div class="postdate">' +
+                                                    '<span class="postDateText">' + postDate + ' (<span class="postRelDateText">' + postRelativeDate + '</span> ago)</span>' +
+                                                    '<div class="postcontrol">' +
+                                                        '<span class="fa fa-reply fa-fw postReplyButton"></span>' +
+                                                        '<span class="fa fa-star fa-fw postStarButton"></span>' +
+                                                        '<span class="fa fa-retweet fa-fw postRepostButton"></span>' +
+                                                        '<span class="fa fa-trash-o fa-fw postDeleteButton"></span>' +
+                                                        '<span class="fa fa-ellipsis-h fa-fw postDetailButton"></span>' +
+                                                    '</div>' +
+                                                '</div>' +
+                                                '<div class="posttext">' +
+                                                    result.data[i].content.html +
+                                                '</div>' +
+                                                postImage +
+                                                '<div class="postvia">' +
+                                                    'Posted via ' + '<a href="' + result.data[i].source.link + '">' + result.data[i].source.name + '</a>' +
+                                                '</div>' +
+                                                '<div class="postcounts">' +
+                                                    '<span class="fa fa-reply fa-fw"></span>' + result.data[i].counts.replies +
+                                                    ' <span class="fa fa-star fa-fw"></span>' + result.data[i].counts.bookmarks +
+                                                    ' <span class="fa fa-retweet fa-fw"></span>' + result.data[i].counts.reposts +
+                                                '</div>' +
+                                                '<div style="clear: both;"></div>' +
+                                            '</div>' +
+                                        '</div>'
+                                    }
+                                }
+                                
+                                $("#windowContents").append(
+                                    '<div class="postthread" style="margin-top: ' + window.innerHeight + 'px">' + 
+                                        postDetailHtml + 
+                                    "</div>"
+                                );
+
+
+                                $(".postthread").height(window.innerHeight - 40);
+
+                                $("#titlebar").append(
+                                    '<div class="postthread-titlebar">' +
+                                        'Conversations' +
+                                    '</div>'
+                                );
+
+                                $
+
+                                $(".postthread, .postthread-titlebar").velocity({
+                                    marginTop: "0px"
+                                }, {
+                                    duration: 250,
+                                    easing: "easeOutCubic"
+                                });
+
+                                $(".postthread-close").velocity("fadeIn", {duration: 500, delay: 750});
+                            }
+                        }
+                    });
+                }
+
+                $(document).on("click", ".postthread-close", closePostThread);
+
+                ipcRenderer.on("token", (ev, msg) => {
+                    if (msg == null) {
+                        ipcRenderer.send("CreateAuthWindow");
+                    } else {
+                        token = msg;
+
+                        getStream('stream');
+                        getStream('mentions');
+                        getStream('global');
+                        getInteractions();
+
+                        $.ajax({
+                            url: "https://api.pnut.io/v0/users/me",
+                            type: "GET",
+                            headers: {
+                                Authorization: "Bearer " + token
+                            },
+                            success: function(result) {
+                                $("#composeScreen .usericon").attr("src", result.data.content.avatar_image.link);
+                                myUserId = result.data.id;
+                            }
+                        });
+
+                    }
+                });
+
+
+
+
+                $(document).on("click", ".postReplyButton", function(){
+                    irtPostId = $(this).parents(".post").attr("post_id");
+                    var username = "@" + $(this).parents(".post").find(".username").text() + " ";
+                    openComposeScreen(username);
+                });
+
+                $(document).on("click", ".postStarButton", function(){
+                    var postId = $(this).parents(".post").attr("post_id");
+                    var requestType = "PUT";
+                    if ($(this).parents(".post").hasClass("`bookmarked")) {
+                        requestType = "DELETE";
+                    }
+                    $.ajax({
+                        url: "https://api.pnut.io/v0/posts/" + postId + "/bookmark",
+                        type: requestType,
+                        headers: {
+                            Authorization: "Bearer " + token
+                        },
+                        success: function(result) {
+                            if (requestType == "DELETE") {
+                                $(".post[post_id=" + postId + "]").removeClass("post-bookmarked");
+                            } else {
+                                $(".post[post_id=" + postId + "]").addClass("post-bookmarked");
+                            }
+                        },
+                        error: function(result) {
+                            console.log(result);
+                        }
+                    });
+                });
+
+                $(document).on("click", ".postRepostButton", function(){
+                    var postId = $(this).parents(".post").attr("post_id");
+                    var requestType = "PUT";
+                    if ($(this).parents(".post").hasClass("post-reposted")) {
+                        requestType = "DELETE";
+                    }
+                    $.ajax({
+                        url: "https://api.pnut.io/v0/posts/" + postId + "/repost",
+                        type: requestType,
+                        headers: {
+                            Authorization: "Bearer " + token
+                        },
+                        success: function(result) {
+                            if (requestType == "DELETE") {
+                                $(".post[post_id=" + postId + "]").removeClass("post-reposted");
+                            } else {
+                                $(".post[post_id=" + postId + "]").addClass("post-reposted");
+                            }
+                        },
+                        error: function(result) {
+                            console.log(result);
+                        }
+                    });
+                });
+
+                $(document).on("click", ".postDeleteButton", function(){
+                    var dialogResult = confirm("really delete this post?");
+                    if (dialogResult) {
+                        var postId = $(this).parents(".post").attr("post_id");
+                        $.ajax({
+                            url: "https://api.pnut.io/v0/posts/" + postId,
+                            type: "DELETE",
+                            headers: {
+                                Authorization: "Bearer " + token
+                            },
+                            success: function(result) {
+                                $(".post[post_id=" + postId +"]").velocity("slideUp", {complete: function() {
+                                    $(".post[post_id=" + postId +"]").remove();
+                                }});
+                            }
+                        });
+                    } else {
+
+                    }
+                });
+
+            });
+
+
+
+            function openComposeScreen(text){
+                if ($("#composeScreen").css("display") == "none") {
+                    $("#composeScreen").velocity("slideDown", {duration: 300});
+                    $("#composeTextArea").val(text);
+                    setTimeout(function(){
+                        $("#composeTextArea").focus();
+                    }, 0);
+                    $("#composeButton").css("color", "#fff");
+                    if ($(".postthread").length) {
+                        $(".postthread").velocity({marginTop: $("#composeScreen").outerHeight() + "px"});
+                    }
+                } else {
+                    closeComposeScreen();
+                }
+            }
+
+            function closeComposeScreen() {
+                if ($("#composeTextArea").val()) {
+                    var dialogResult = confirm("Post will not saved. Really close?");
+                    if (dialogResult) {
+
+                    } else {
+                        return false;
+                    }
+                }
+                $("#composeSpinner").velocity("fadeOut", {duration: 100});
+                $("#composeButton").css("color", "#bbb");
+                $("#composeTextArea").val("");
+                $("#composeTextArea").css("height", "auto");
+                $("#composeScreen").velocity("slideUp", {duration: 300});
+
+                irtPostId = "";
+
+                $(".postthread").velocity({marginTop: "0px"});
+            }
+
+            function composePost() {
+                $("#composeSpinner").velocity("fadeIn");
+                var postData;
+                if (irtPostId) {
+                    postData = {
+                        text: $("#composeTextArea").val(),
+                        reply_to: irtPostId,
+                        update_marker: 1
+                    }
+                } else {
+                    postData = {
+                        text: $("#composeTextArea").val(),
+                        update_marker: 1
+                    }
+                }
+
+                $.ajax({
+                    url: "https://api.pnut.io/v0/posts",
+                    type: "POST",
+                    headers: {
+                        Authorization: "Bearer " + token
+                    },
+                    data: postData,
+                    success : function(result) {
+                        console.log(result);
+                        $("#composeTextArea").val("");
+                        $("#composeCharRemain").text("256");
+                        closeComposeScreen();
+                        getStream("stream");
+                        getStream("global");
+                        irtPostId = "";
+                    },
+                    error: function(result) {
+                        console.log(result);
+                        alert(result.responseText);
+                        $("#composeSpinner").velocity("fadeOut");
+                    }
+                });
+            }
+
+
+            function getStream(type) {
+                var typeUrl;
+                var latestId;
+                var includeDirectedPosts;
+
+                console.log("getting stream: " + type);
+
+                switch (type) {
+                    case "stream":
+                        typeUrl = "https://api.pnut.io/v0/posts/streams/me";
+                        latestId = latestStreamPostId;
+                        if (store.get("includeDirectedPosts", false)) {
+                            includeDirectedPosts = 1;
+                        } else {
+                            includeDirectedPosts = 0;
+                        }
+                        break;
+                    case "global":
+                        typeUrl = "https://api.pnut.io/v0/posts/streams/global";
+                        latestId = latestGlobalPostId;
+                        includeDirectedPosts = 1;
+                        break;
+                    case "mentions":
+                        typeUrl = "https://api.pnut.io/v0/users/me/mentions";
+                        latestId = latestMentionsPostId;
+                        includeDirectedPosts = 1;
+                        break;
+                }
+
+                $.ajax({
+                    url: typeUrl,
+                    type: "GET",
+                    headers : {
+                        Authorization: "Bearer " + token
+                    },
+                    data: {
+                        since_id: latestId,
+                        count: 200,
+                        include_directed_posts: includeDirectedPosts,
+                        include_copy_mentions: 1,
+                        include_post_raw: 1
+                    },
+                    success: function(result) {
+                        console.log(type, result);
+                        var prependHTML = "";
+                        if (result.data.length) {
+
+                            switch (type) {
+                                case "stream":
+                                    latestStreamPostId = result.data[0].id;
+                                    break;
+                                case "global":
+                                    latestGlobalPostId = result.data[0].id;
+                                    break;
+                                case "mentions":
+                                    latestMentionsPostId = result.data[0].id;
+                                    break;
+                            }
+
+                            for (var i in result.data) {
+                                if (!result.data[i].is_deleted) {
+                                    var postDate = new Date(result.data[i].created_at).toLocaleString();
+                                    var postRelativeDate = getRelativeDate(postDate);
+                                    var postImage = "";
+                                    var repostInfo = "";
+
+                                    var deleteButton, postclass ="";
+
+                                    if ("repost_of" in result.data[i]) {
+                                        repostInfo = ' <span class="repostedUsername"><span class="fa fa-retweet"></span> ' + result.data[i].user.username + '</span>'
+
+                                        result.data[i] = result.data[i].repost_of;
+                                    }
+
+                                    if (result.data[i].user.id == myUserId) {
+                                        postclass = postclass + " post-mypost";
+                                    } else {
+                                        deleteButton = "";
+                                    }
+
+                                    if (result.data[i].you_bookmarked) {
+                                        postclass = postclass + " post-bookmarked";
+                                    }
+
+                                    if (result.data[i].you_reposted) {
+                                        postclass = postclass + " post-reposted";
+                                    }
+
+                                    if ("raw" in result.data[i]) {
+                                        if (result.data[i].raw.length) {
+                                            for (var j in result.data[i].raw) {
+                                                if (result.data[i].raw[j].value.type == "photo") {
+                                                    var imgUrl = result.data[i].raw[j].value.url;
+                                                    postImage = '<a href="' + imgUrl + '"><img class="postimage" src="' + imgUrl + '"></a><br>';
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (result.data[i].content.entities.links.length) {
+                                        for (var j in result.data[i].content.entities.links) {
+                                            var url = result.data[i].content.entities.links[j].link;
+                                            if (url.match(/.*\.png|.*\.jpeg|.*\.jpg|.*\.gif/)) {
+                                                postImage = '<a href="' + url + '"><img class="postimage" src="' + url + '"></a><br>';
+                                            }
+                                        }
+                                    }
+
+                                    $(".post-latest").removeClass("post-latest");
+
+                                    prependHTML = prependHTML +
+                                        '<div class="post post-latest' + postclass + '" post_id=' + result.data[i].id + ' post_created_at="' + result.data[i].created_at + '" style="display: none;">' +
+                                            '<img class="usericon" src="' + result.data[i].user.content.avatar_image.link + '">' +
+                                            '<div class="postcontent">' +
+                                                '<div class="usernameArea">' +
+                                                    '<span class="username">' + result.data[i].user.username + '</span>' + repostInfo +
+                                                '</div>' +
+                                                '<div class="postdate">' +
+                                                    '<span class="postDateText"><span class="postRelDateText">' + postRelativeDate + '</span></span>' +
+                                                    '<div class="postcontrol">' +
+                                                        '<span class="fa fa-reply fa-fw postReplyButton"></span>' +
+                                                        '<span class="fa fa-star fa-fw postStarButton"></span>' +
+                                                        '<span class="fa fa-retweet fa-fw postRepostButton"></span>' +
+                                                        '<span class="fa fa-trash-o fa-fw postDeleteButton"></span>' +
+                                                        '<span class="fa fa-ellipsis-h fa-fw postDetailButton"></span>' +
+                                                    '</div>' +
+                                                '</div>' +
+                                                '<div class="posttext">' +
+                                                    result.data[i].content.html +
+                                                '</div>' +
+                                                postImage +
+                                            '</div>' +
+                                        '</div>';
+                                    
+                                    if (type == "stream" && store.get("notifyStream", false) && result.data.length < 10) {
+                                        notify("New post from @" + result.data[i].user.username, result.data[i].content.text, function() {
+                                            tabSelect(0);
+                                        });
+                                    }
+                                    
+                                    if (type == "mentions" && store.get("notifyMentions", true) && result.data.length < 10) {
+                                        notify("Mention from @" + result.data[i].user.username, result.data[i].content.text, function() {
+                                            tabSelect(1);
+                                        });
+                                    }
+                                    
+                                    if (type == "global" && store.get("notifyGlobal", false) && result.data.length < 10) {
+                                        notify("New global post from @" + result.data[i].user.username, result.data[i].content.text, function() {
+                                            tabSelect(3);
+                                        });
+                                    }
+                                }
+                            }
+
+                            switch (type) {
+                                case "stream":
+                                    $("#stream").prepend(prependHTML);
+                                    break;
+                                case "global":
+                                    $("#global").prepend(prependHTML);
+                                    break;
+                                case "mentions":
+                                    $("#mentions").prepend(prependHTML);
+                                    break;
+                            }
+                            
+
+                            $("#streamSpinner").velocity("fadeOut", {duration: 300});
+
+                            $(".post-latest").velocity("slideDown", {duration: 300, delay: 300});
+
+                            $("#" + type + " .post:gt(200)").remove();
+                        }
+                        
+                    }
+                });
+    
+            }
+            
+            function getProfile(user) {
+                    
+                    $("#profileStream").empty();
+
+                    $("#profileHeaderImage").css("background-image", "none");
+                    $("#profileAvatar").attr("src", "");
+
+                    $("#profileDisplayname").text("");
+                    $("#profileUsername").text("");
+
+                    $("#profileBio").text("");
+
+                    $("#profileFollowingCount").text("");
+                    $("#profileFollowersCount").text("");
+                    $("#profilePostsCount").text("");
+
+
+                    $.ajax({
+                        url: "https://api.pnut.io/v0/users/" + user,
+                        type: "GET",
+                        headers: {
+                            Authorization: "Bearer " + token
+                        },
+                        success: function(result) {
+
+                            $("#profileHeaderImage").css("background-image", "url(" + result.data.content.cover_image.link + ")");
+                            $("#profileAvatar").attr("src", result.data.content.avatar_image.link);
+
+                            $("#profileDisplayname").text(result.data.name);
+                            $("#profileUsername").text("@" + result.data.username);
+
+                            $("#profileBio").html(result.data.content.html);
+
+                            $("#profileFollowingCount").text(result.data.counts.following);
+                            $("#profileFollowersCount").text(result.data.counts.followers);
+                            $("#profilePostsCount").text(result.data.counts.posts);
+                        }
+                    });
+
+                    $.ajax({
+                        url: "https://api.pnut.io/v0/users/" + user + "/posts",
+                        type: "GET",
+                        headers: {
+                            Authorization: "Bearer " + token
+                        },
+                        success: function(result) {
+                            console.log(result);
+
+                            if (result.data.length) {
+                                var prependHTML = "";
+                                for (var i in result.data) {
+                                    if (!result.data[i].is_deleted) {
+                                        var postDate = new Date(result.data[i].created_at).toLocaleString();
+                                        var postRelativeDate = getRelativeDate(postDate);
+                                        var postImage = "";
+                                        var repostInfo = "";
+
+                                        var deleteButton, postclass ="";
+
+                                        if ("repost_of" in result.data[i]) {
+                                            repostInfo = ' <span class="repostedUsername"><span class="fa fa-retweet"></span> ' + result.data[i].user.username + '</span>'
+
+                                            result.data[i] = result.data[i].repost_of;
+                                        }
+
+                                        if (result.data[i].user.id == myUserId) {
+                                            postclass = postclass + " post-mypost";
+                                        } else {
+                                            deleteButton = "";
+                                        }
+
+                                        if (result.data[i].you_bookmarked) {
+                                            postclass = postclass + " post-bookmarked";
+                                        }
+
+                                        if (result.data[i].you_reposted) {
+                                            postclass = postclass + " post-reposted";
+                                        }
+
+                                        if ("raw" in result.data[i]) {
+                                            if (result.data[i].raw.length) {
+                                                for (var j in result.data[i].raw) {
+                                                    if (result.data[i].raw[j].value.type == "photo") {
+                                                        var imgUrl = result.data[i].raw[j].value.url;
+                                                        postImage = '<a href="' + imgUrl + '"><img class="postimage" src="' + imgUrl + '"></a><br>';
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        if (result.data[i].content.entities.links.length) {
+                                            for (var j in result.data[i].content.entities.links) {
+                                                var url = result.data[i].content.entities.links[j].link;
+                                                if (url.match(/.*\.png|.*\.jpeg|.*\.jpg|.*\.gif/)) {
+                                                    postImage = '<a href="' + url + '"><img class="postimage" src="' + url + '"></a><br>';
+                                                }
+                                            }
+                                        }
+
+                                        $(".post-latest").removeClass("post-latest");
+
+                                        prependHTML = prependHTML +
+                                            '<div class="post post-latest' + postclass + '" post_id=' + result.data[i].id + ' post_created_at="' + result.data[i].created_at + '" style="display: none;">' +
+                                                '<img class="usericon" src="' + result.data[i].user.content.avatar_image.link + '">' +
+                                                '<div class="postcontent">' +
+                                                    '<div class="usernameArea">' +
+                                                        '<span class="username">' + result.data[i].user.username + '</span>' + repostInfo +
+                                                    '</div>' +
+                                                    '<div class="postdate">' +
+                                                        '<span class="postRelDateText">' + postRelativeDate + '</span>' +
+                                                        '<div class="postcontrol">' +
+                                                            '<span class="fa fa-reply fa-fw postReplyButton"></span>' +
+                                                            '<span class="fa fa-star fa-fw postStarButton"></span>' +
+                                                            '<span class="fa fa-retweet fa-fw postRepostButton"></span>' +
+                                                            '<span class="fa fa-trash-o fa-fw postDeleteButton"></span>' +
+                                                            '<span class="fa fa-ellipsis-h fa-fw postDetailButton"></span>' +
+                                                        '</div>' +
+                                                    '</div>' +
+                                                    '<div class="posttext">' +
+                                                        result.data[i].content.html +
+                                                    '</div>' +
+                                                    postImage +
+                                                '</div>' +
+                                            '</div>'
+                                    }
+                                }
+
+                                $("#profileStream").prepend(prependHTML);
+                                $(".post-latest").velocity("slideDown", {duration: 300, delay: 300});
+                            }
+                        }
+                    });
+                }
+
+            function tabSelect(tabId, userTabUser) {
+
+                if (selectedTab != tabId || userTabUser !== undefined) { 
+                    selectedTab = tabId;
+                    store.set("selectedTab", tabId);
+
+                    $("#titlebar-center .titlebar-button").css("color", "#bbb");
+                    $("#titlebar-center .titlebar-button:eq(" + tabId + ")").css("color", "#fff");
+                    
+                    $(".streams").velocity("fadeOut", {duration: 250});
+                    closePostThread();
+
+                    switch (tabId) {
+                        case 0:
+                            $("#stream").velocity("fadeIn", {duration: 250});
+                            break;
+                        case 1:
+                            $("#mentions").velocity("fadeIn", {duration: 250});
+                            break;
+                        case 2:
+                            $("#interactions").velocity("fadeIn", {duration: 250});
+                            break;
+                        case 3:
+                            $("#global").velocity("fadeIn", {duration: 250});
+                            break;
+                        case 4:
+                            
+                            if (userTabUser === undefined) {
+                                userTabUser = "me";
+                            }
+
+                            getProfile(userTabUser);
+                            $("#profile").velocity("fadeIn", {duration: 250});
+                            $("#titlebar").velocity({backgroundColor: "#000000", backgroundColorAlpha: 0}, {duration: 1000, easing: "easeOutQuint"});
+                            $("#titlebar").addClass("titlebar-profiletab");
+                            break;
+                    }
+
+                    if (tabId != 4) {
+                        if (process.platform == "darwin") {
+                            $("#titlebar").velocity({backgroundColor: "#000000", backgroundColorAlpha: 0.3});
+                        } else {
+                            $("#titlebar").velocity({backgroundColor: "#000000", backgroundColorAlpha: 1.0});
+                        }
+                        $("#titlebar").removeClass("titlebar-profiletab");
+                    }
+                } else {
+                    $("#windowContents").animate({scrollTop: 0});
+                }
+            }
+
+            function getInteractions() {
+                console.log("getting interactions");
+                $.ajax({
+                    url: "https://api.pnut.io/v0/users/me/actions",
+                    type: "GET",
+                    headers : {
+                        Authorization: "Bearer " + token
+                    },
+                    data: {
+                        since_id: latestInteractionsId,
+                        count: 200,
+                        include_post_raw: 1,
+                        exclude: "reply"
+                    },
+                    success: function(result) {
+
+                        var prependHTML = "";
+
+                        console.log("interactions", result);
+                        
+                        if (result.data.length) {
+
+                            latestInteractionsId = result.data[0].pagination_id;
+
+                            for (var i in result.data) {
+                                var postDate = new Date(result.data[i].event_date).toLocaleString();
+                                var postRelativeDate = getRelativeDate(postDate);
+                                var content;
+                                var action;
+                                var post_id;
+
+                                switch (result.data[i].action) {
+                                    case "bookmark":
+                                        action = '<span class="fa fa-star"></span> Bookmarked'
+                                        post_id = result.data[i].objects[0].id;
+
+                                        if (result.data[i].objects[0].is_deleted) { 
+                                            content = '<div class="posttext" style="font-style: italic;">This post was deleted.</div>';
+                                        } else {
+                                            content = '<div class="posttext">' + result.data[i].objects[0].content.html + '</div>';
+                                            if (store.get("notifyInteractions", true) && result.data.length < 10) {
+                                                notify("Bookmarked by @" + result.data[i].users[0].username, result.data[i].objects[0].content.text, function() {
+                                                    tabSelect(2);
+                                                });
+                                            }
+                                        }
+                                        
+                                        break;
+                                    case "repost":
+                                        action = '<span class="fa fa-retweet"></span> Reposted'
+                                        post_id = result.data[i].objects[0].id;
+
+                                        if (result.data[i].objects[0].is_deleted) { 
+                                            content = '<div class="posttext" style="font-style: italic;">This post was deleted.</div>';
+                                        } else {
+                                            content = '<div class="posttext">' + result.data[i].objects[0].content.html + '</div>';
+                                            if (store.get("notifyInteractions", true) && result.data.length < 10) {
+                                                notify("Reposted by @" + result.data[i].users[0].username, result.data[i].objects[0].content.text, function() {
+                                                    tabSelect(2);
+                                                }); 
+                                            }
+                                        }
+
+                                        break;
+                                    case "follow":
+                                        action = '<span class="fa fa-user-plus"></span> Followed'
+                                        content = "";
+                                        
+                                        if (store.get("notifyInteractions", true) && result.data.length < 10) {
+                                            notify("Followed by @" + result.data[i].users[0].username, "", function() {
+                                                tabSelect(2);
+                                            });
+                                        }
+                                        break;
+                                    default:
+                                        action = result.data[i].action;
+                                        break;
+                                }
+                                prependHTML = prependHTML +
+                                    '<div class="post post-interaction post-latest"' + ' post_id="' + post_id + '" post_created_at="' + result.data[i].event_date + '">' +
+                                        '<img class="usericon" src="' + result.data[i].users[0].content.avatar_image.link + '">' +
+                                        '<div class="postcontent">' +
+                                            '<div class="usernameArea">' +
+                                                action + ' by <span class="username">' + result.data[i].users[0].username + "</span>" +
+                                            '</div>' +
+                                            '<div class="postdate">' + 
+                                                '<span class="postRelDateText">' + postRelativeDate + '</span>' +
+                                            '</div>' +
+                                                content +
+                                        '</div>' +
+                                    '</div>'
+                            }
+
+                            $("#interactions").prepend(prependHTML);
+                            $(".post-latest").velocity("slideDown", {duration: 300, delay: 300});
+
+                        }
+                    }
+                });
+            }
+
+            function closePostThread() {
+                $(".postthread, .postthread-titlebar").velocity({marginTop: window.innerHeight},{
+                    duration: 250,
+                    easing: "easeInCubic"
+                });
+
+                $(".postthread-close").velocity("fadeOut");
+
+                setTimeout(function() { 
+                    $(".postthread, .postthread-titlebar").remove();
+                }, 500);
+            }
+
+            function getRelativeDate(targetDateStr){
+                var baseDate = new Date();
+                var targetDate = new Date(targetDateStr);
+
+                var elapsedTime = Math.ceil((baseDate.getTime() - targetDate.getTime())/1000);
+
+                var message = null;
+
+
+                if (store.get("absoluteDate", false) == false) {
+
+                    if (elapsedTime < 60) {
+                        message =  'now';
+                    } else if (elapsedTime < (60*60)) { //  1 時間未満
+                        message = Math.floor(elapsedTime / 60) + 'm';
+                    } else if (elapsedTime < (24*60*60)) { //  1 日未満
+                        message = Math.floor(elapsedTime / 3600) + 'h';
+                    } else if (elapsedTime < (7*24*60*60)) { // 1 週間未満
+                        message = Math.floor(elapsedTime / 86400) + 'd';
+                    } else { // 1 週間以上
+                        message = Math.floor(elapsedTime / 604800) + 'w';
+                    }
+
+                } else {
+                    var h, m, d, mo;
+                    d = targetDate.getDate();
+                    mo = targetDate.getMonth();
+                    h = targetDate.getHours();
+                    m = targetDate.getMinutes();
+
+                    if (h < 10) {
+                        h = '0' + h;
+                    }
+                    if (m < 10) {
+                        m = '0' + m;
+                    }
+                    message = mo + "/" + d + " " + h + ":" + m;
+                }
+
+                return message;
+            }
+
+            function notify(title, content, onClickCallback) {
+                var notification = window.Notification;
+                var instance = new Notification(
+                    title, {
+                        body: content
+                    }
+                );
+                instance.onclick = function() {
+                    ipcRenderer.send("winRestore");
+                    onClickCallback();
+                };
+            }
+
+
+        </script>
+        <style>
+
+            body {
+                margin: 0;
+                font-family: sans-serif;
+                font-size: 10pt;
+                -webkit-user-select: none;
+                background: transparent;
+            }
+
+            #titlebar {
+                width: 100%;
+                height: 39px;
+                overflow: hidden;
+                -webkit-app-region: drag;
+                position: fixed;
+                vertical-align: middle;
+                background-color: rgba(0, 0, 0, 0.3);
+                color: #bbb;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+                top: 0;
+                z-index: 10;
+            }
+
+            #titlebar-center {
+                margin-left: auto;
+                margin-right: auto;
+                margin-top: 10px;
+                text-align: center;
+            }
+
+            #titlebar-edge {
+                position: absolute;
+                top: 10px;
+            }
+            
+            .titlebar-button {
+                -webkit-app-region: no-drag;
+                cursor: pointer;
+                font-size: 20px;
+                text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+            }
+
+            .titlebar-button:active {
+                color: #fff;
+            }
+
+            #windowControl {
+                position: fixed;
+                right: 0;
+                top: 0;
+                z-index: 101;
+            }
+
+            #windowControl span {
+                -webkit-app-region: no-drag;
+                vertical-align: middle;
+                display: inline-block;
+                width: 40px;
+                height: 40px;
+                line-height: 40px;
+                text-align: center;
+            }
+
+            #windowControl svg {
+                margin: 14px;
+                height: 12px;
+            }
+
+            #windowControl span:hover {
+                background-color: rgba(255, 255, 255, 0.25);
+            }
+            #windowControl #winClose:hover {
+                background-color: #f00;
+                color: #fff;
+            }
+
+            #titlebar.titlebar-profiletab {
+                border-bottom: 0;
+                transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+            }
+
+            #titlebar.titlebar-profiletab:hover {
+                background-color: rgba(0, 0, 0, 0.75) !important;
+            }
+
+
+
+
+
+
+            #windowContents {
+                position: absolute;
+                top: 40px;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                overflow-y: scroll;
+                background-color: #fff;
+                z-index: 3;
+            }
+
+            .darkmode #windowContents {
+                background-color: #222;
+                color: #ddd;
+            }
+
+            #composeScreen {
+                position: relative;
+                display: none;
+                padding-top: 8px;
+                padding-left: 8px;
+                padding-right: 8px;
+                padding-bottom: 10px;
+                text-align: right;
+                z-index: 30;
+                background-color: #f3f3f3;
+                border-bottom: 1px solid #ddd;
+            }
+
+            #composeSpinner, #streamSpinner {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                margin-top: -12px;
+                margin-left: -12px;
+                width: 24px;
+                height: 24px;
+                font-size: 24px;
+                text-align: center;
+            }
+
+            #composeSpinner {
+                position: absolute;
+                display: none;
+            }
+
+            #composeScreen .usericon {
+                float: left;
+            }
+
+            #innerComposeScreen {
+                margin-left: 8px;
+                float: left;
+            }
+
+            #composeTextArea {
+                width: 100%;
+                height: auto;
+                outline: 0;
+                resize: none;
+                border: 0;
+                background-color: #f3f3f3;
+                font-family: sans-serif;
+                font-size: 10pt;
+            }
+
+            #composeScreen button, #composeCharRemain {
+                font-size: 9pt;
+            }
+
+            #composeCharRemain {
+                float: left;
+                color: #666;
+                margin-left: 2px;
+                margin-top: 3px;
+            }
+
+
+
+
+
+
+
+
+            span[itemprop=mention], span[itemprop=tag] {
+                color: #999;
+                cursor: pointer;
+            }
+
+            .darkmode span[itemprop=mention], .darkmode span[itemprop=tag] {
+                color: #bbb;
+            }
+
+            .post {
+                padding: 8px;
+                border-bottom: 1px solid #ddd;
+                min-height: 48px;
+            }
+
+            .darkmode .post {
+                border-bottom: 1px solid #333;
+            }
+
+            .post.post-bookmarked .postStarButton {
+                color: #e8d333;
+            }
+            .post.post-reposted .postRepostButton {
+                color: #2fd445;
+            }
+
+            .post:not(.post-mypost) .postDeleteButton {
+                display: none;
+            }
+            .post-mypost .postRepostButton {
+                display: none;
+            }
+
+            a {
+                color: #999;
+            }
+
+            .darkmode a {
+                color: #bbb;
+            }
+
+            .usericon {
+                width: 48px;
+                height: 48px;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+
+            .postcontent {
+                margin-left: 58px;
+                margin-top: -52px;
+            }
+
+            .username {
+                cursor: pointer;
+                font-weight: bold;
+            }
+
+            .usernameArea {
+                margin-bottom: 3px;
+                float: left;
+            }
+
+            .repostedUsername {
+                color: #999;
+                font-weight: normal;
+            }
+
+            .postdate, .postvia, .postcounts {
+                position: relative;
+                text-align: right;
+                float: right;
+                color: #999;
+                font-size: 9pt;
+            }
+
+            .postcounts {
+                float: left;
+                text-align: left;
+                margin-top: 8px;
+            }
+
+            .postvia {
+                margin-top: 8px;
+            }
+
+            .postcontrol {
+                background-color: #fff;
+                font-size: 12pt;
+                width: 100px;
+                text-align: right;
+                position: absolute;
+                top: 0;
+                right: 0;
+                display: none;
+            }
+            .darkmode .postcontrol {
+                background-color: #222;
+            }
+
+            .postcontrol span {
+                cursor: pointer;
+            }
+
+            .posttext {
+                clear: both;
+                -webkit-user-select: text;
+            }
+
+            .posttext a {
+                word-break: break-all;
+            }
+
+            .postimage {
+                margin-top: 8px;
+                width: 100%;
+                height: auto;
+            }
+
+            .post-interaction .posttext {
+                border: 1px solid #ccc;
+                border-radius: 2px;
+                background-color: #eee;
+                padding: 8px;
+                cursor: pointer;
+            }
+
+            .darkmode .post-interaction .posttext {
+                background-color: #333;
+                border: 1px solid #222;
+            }
+
+
+
+
+            .postthread {
+                position: fixed;
+                top: 40px;
+                background-color: #fff;
+                width: 100%;
+                height: 100%;
+                z-index: 14;
+                overflow-y: scroll;
+            }
+
+            .postthread-mentions, .postthread-mentions .postcontrol {
+                background-color: #eee;
+            }
+
+            .postthread .posttext {
+                font-size: 11pt;
+            }
+
+            .postthread-mentions .posttext {
+                font-size: 9pt;
+            }
+
+            .postthread-titlebar {
+                position: fixed;
+                padding-top: 12px;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 28px;
+                font-size: 11pt;
+                text-align: center;
+                color: #fff;
+                background-color: #46c;
+                z-index: 20;
+            }
+
+
+
+
+
+
+
+            #profile {
+                text-align: center;
+            }
+
+            #profileHeaderImage {
+                position: fixed;
+                z-index: 12;
+                width: 100%;
+                height: 140px;
+                top: 0;
+                background-size: cover;
+                background-position: center;
+            }
+
+            #profileAvatar {
+                position: relative;
+                z-index: 13;
+                width: 72px;
+                height: 72px;
+                margin-left: auto;
+                margin-right: auto;
+                margin-top: 64px;
+                border-radius: 5px;
+            }
+
+            #profileDetails {
+                border-bottom: 1px solid #ddd;
+            }
+
+            #profile p {
+                margin-top: 8px;
+                margin-bottom: 8px;
+                margin-left: 25px;
+                margin-right: 25px;
+            }
+
+            #profileDisplayname {
+                font-size: 18pt;
+                font-weight: bold;
+            }
+
+            #profileUsername {
+                font-size: 9pt;
+                color: #666;
+            }
+
+            #profileCounts {
+                margin-top: 16px;
+                margin-left: 25px;
+                margin-right: 25px;
+            }
+
+            #profileCounts div {
+                display: inline-block;
+                margin-left: 5px;
+                margin-right: 5px;
+                margin-bottom: 18px;
+            }
+
+            #profileCounts div span {
+                font-size: 14pt;
+            }
+
+            #profileStream {
+                text-align: left;
+            }
+
+
+
+
+
+
+
+            .bottomNotify {
+                display: none;
+                position: fixed;
+                width: 100%;
+                color: white;
+                font-size: 9pt;
+                bottom: 0;
+                z-index: 50;
+            }
+
+            #updateNotify {
+                background-color: #46c;
+            }
+
+            #updateNotify a {
+                color: white;
+                cursor: pointer;
+            }
+
+            #updateNotifyClose {
+                display: block;
+                position: absolute;
+                right: 8px;
+                bottom: 8px;
+            }
+
+            #hiddenFeatureNotify {
+                color: white;
+                background-color: magenta;
+            }
+
+            .postthread-close {
+                position: fixed;
+                font-size: 11pt;
+                text-align: center;
+                line-height: 40px;
+                width: 100%;
+                height: 40px;
+                color: white;
+                display: none;
+                background-color: #46c;
+                cursor: pointer;
+                z-index: 20;
+            }
+
+        </style>
+    </head>
+    <body>
+        <div id="titlebar">
+            <div id="titlebar-center">
+                <span class="titlebar-button fa fa-home fa-fw" id="streamButton" style="color: #fff"></span>
+                <span class="titlebar-button fa fa-at fa-fw" id="mentionsButton"></span>
+                <span class="titlebar-button fa fa-bullseye fa-fw" id="interactionsButton" style="margin-bottom: 2px;"></span>
+                <span class="titlebar-button fa fa-globe fa-fw" id="globalButton"></span>
+                <span class="titlebar-button fa fa-user fa-fw" id="myProfileButton"></span>
+            </div>
+            <div id="titlebar-edge">
+                <span class="titlebar-button fa fa-pencil" id="composeButton"></span>
+            </div>
+        </div>
+        <div id="windowContents">
+            <div id="composeScreen">
+                <div id="composeSpinner">
+                    <span class="fa fa-refresh fa-spin"></span>
+                </div>
+                <img src="" class="usericon">
+                <div id="innerComposeScreen">
+                    <textarea id="composeTextArea" placeholder="Say something..."></textarea><br>
+                    <div id="composeCharRemain">256</div>
+                    <div id="composeInfo"></div>
+                    <div style="float: right;">
+                        <button id="composeCancelButton">Cancel</button>
+                        <button id="composePostButton">Post</button>
+                    </div>
+                    <div style="clear: both;"></div>
+                </div>
+                <div style="clear: both;"></div>
+            </div>
+            <div id="streamSpinner">
+                <span class="fa fa-refresh fa-spin"></span>
+            </div>
+            <div id="stream" class="streams"></div>
+            <div id="mentions" class="streams" style="display: none;"></div>
+            <div id="interactions" class="streams" style="display: none;"></div>
+            <div id="global" class="streams" style="display: none;"></div>
+            <div id="profile" class="streams" style="display: none;">
+                <div id="profileHeaderImage"></div>
+                <img id="profileAvatar">
+                <div id="profileDetails">
+                    <p>
+                        <span id="profileDisplayname">displayname</span><br>
+                        <span id="profileUsername">@username</span>
+                    </p>
+                    <p id="profileBio"></p>
+                    <div id="profileCounts">
+                        <div id="profileFollowing">
+                            <span id="profileFollowingCount">0</span><br>
+                            Following
+                        </div>
+                        <div id="profileFollowers">
+                            <span id="profileFollowersCount">0</span><br>
+                            Followers
+                        </div>
+                        <div id="profilePosts">
+                            <span id="profilePostsCount">0</span><br>
+                            Posts
+                        </div>
+                    </div>
+                </div>
+                <div id="profileStream"></div>
+            </div>
+
+            <div id="updateNotify" class="bottomNotify">
+                <div style="margin: 8px;">
+                    <span class="fa fa-info-circle"></span> New version <span id="updateNotifyNewVersion"></span> available. <a href="http://kyo5884.tk/enuts">Download</a>
+                    <a id="updateNotifyClose" class="fa fa-close"></a>
+                </div>
+            </div>
+            <div id="hiddenFeatureNotify" class="bottomNotify">
+                <div style="margin: 8px;">
+                    <span class="fa fa-info-circle"></span> Hidden feature enabled.
+                </div>
+            </div>
+        </div>
+
+        <div class="postthread-close">
+            <span class="fa fa-chevron-left"></span> Back to stream
+        </div>
+    </body>
+</html>

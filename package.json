@@ -1,0 +1,11 @@
+{
+  "name": "enuts",
+  "version": "0.6.0",
+  "description": "pnut.io desktop client",
+  "main": "index.js",
+  "dependencies": {
+    "electron-store": "^1.1.0"
+  },
+  "author": "kyo5884"
+}
+ 
