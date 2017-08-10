@@ -429,7 +429,11 @@
                 $(document).on("click", ".postStarButton", function(){
                     var postId = $(this).parents(".post").attr("post_id");
                     var requestType = "PUT";
-                    if ($(this).parents(".post").hasClass("`bookmarked")) {
+
+                    $(this).removeClass("fa-star");
+                    $(this).addClass("fa-refresh fa-spin");
+
+                    if ($(this).parents(".post").hasClass("post-bookmarked")) {
                         requestType = "DELETE";
                     }
                     $.ajax({
@@ -439,6 +443,8 @@
                             Authorization: "Bearer " + token
                         },
                         success: function(result) {
+                            $(".post[post_id=" + postId + "] .postStarButton").removeClass("fa-refresh fa-spin");
+                            $(".post[post_id=" + postId + "] .postStarButton").addClass("fa-star");
                             if (requestType == "DELETE") {
                                 $(".post[post_id=" + postId + "]").removeClass("post-bookmarked");
                             } else {
@@ -447,6 +453,8 @@
                         },
                         error: function(result) {
                             console.log(result);
+                            $(".post[post_id=" + postId + "] .postStarButton").removeClass("fa-refresh fa-spin");
+                            $(".post[post_id=" + postId + "] .postStarButton").addClass("fa-star");
                         }
                     });
                 });
@@ -454,6 +462,10 @@
                 $(document).on("click", ".postRepostButton", function(){
                     var postId = $(this).parents(".post").attr("post_id");
                     var requestType = "PUT";
+
+                    $(this).removeClass("fa-retweet");
+                    $(this).addClass("fa-refresh fa-spin");
+
                     if ($(this).parents(".post").hasClass("post-reposted")) {
                         requestType = "DELETE";
                     }
@@ -464,6 +476,8 @@
                             Authorization: "Bearer " + token
                         },
                         success: function(result) {
+                            $(".post[post_id=" + postId + "] .postRepostButton").removeClass("fa-refresh fa-spin");
+                            $(".post[post_id=" + postId + "] .postRepostButton").addClass("fa-retweet");
                             if (requestType == "DELETE") {
                                 $(".post[post_id=" + postId + "]").removeClass("post-reposted");
                             } else {
@@ -472,6 +486,8 @@
                         },
                         error: function(result) {
                             console.log(result);
+                            $(".post[post_id=" + postId + "] .postRepostButton").removeClass("fa-refresh fa-spin");
+                            $(".post[post_id=" + postId + "] .postRepostButton").addClass("fa-retweet");
                         }
                     });
                 });
