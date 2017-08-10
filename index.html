@@ -805,19 +805,19 @@
                                             '</div>' +
                                         '</div>';
                                     
-                                    if (type == "stream" && store.get("notifyStream", false) && result.data.length < 10) {
+                                    if (type == "stream" && store.get("notifyStream", false) && result.data.length < 10 && result.data[i].user.id != myUserId) {
                                         notify("New post from @" + result.data[i].user.username, result.data[i].content.text, function() {
                                             tabSelect(0);
                                         });
                                     }
                                     
-                                    if (type == "mentions" && store.get("notifyMentions", true) && result.data.length < 10) {
+                                    if (type == "mentions" && store.get("notifyMentions", true) && result.data.length < 10 && result.data[i].user.id != myUserId) {
                                         notify("Mention from @" + result.data[i].user.username, result.data[i].content.text, function() {
                                             tabSelect(1);
                                         });
                                     }
                                     
-                                    if (type == "global" && store.get("notifyGlobal", false) && result.data.length < 10) {
+                                    if (type == "global" && store.get("notifyGlobal", false) && result.data.length < 10 && result.data[i].user.id != myUserId) {
                                         notify("New global post from @" + result.data[i].user.username, result.data[i].content.text, function() {
                                             tabSelect(3);
                                         });
