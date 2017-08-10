@@ -558,10 +558,13 @@
             });
 
             $(document).on("click", ".composeScreenFilePreview", function() {
-                $(this).remove();
-                uploadFile = null;
-                $("#composeScreenFile").val();
-                $("label[for='composeScreenFile']").velocity("fadeIn");
+                var dialogResult = confirm("Remove this image?");
+                if (dialogResult) {
+                    $(this).remove();
+                    uploadFile = null;
+                    $("#composeScreenFile").val();
+                    $("label[for='composeScreenFile']").velocity("fadeIn");
+                }
             });
 
             function uploadFilePreview(file) {
