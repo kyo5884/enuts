@@ -565,7 +565,6 @@
                 event.preventDefault();
                 if (event.originalEvent.dataTransfer.files[0].type.indexOf("image/") === 0) {
                     document.getElementById("composeScreenFile").files = event.originalEvent.dataTransfer.files;
-                    //uploadFilePreview(event.originalEvent.dataTransfer.files[0]);
                 }
             });
 
@@ -578,6 +577,7 @@
                 if (dialogResult) {
                     $(this).remove();
                     uploadFile = null;
+                    $('input[name="composeScreenFile"]').val("");
                     $("#composeScreenFile").val();
                     $("label[for='composeScreenFile']").velocity("fadeIn");
                 }
@@ -587,14 +587,16 @@
                 
                 $("label[for='composeScreenFile']").velocity("fadeOut", {complete: function(){
                 
-                    var img = $('<img class="composeScreenFilePreview">');
+                    var img = $('<div class="composeScreenFilePreview">');
                     img.css("background-image", 'url("' + file.path + '")');
                     img.css({
                         height: "20px",
                         width: "24px",
-                        verticalAlign: "bottom",
                         backgroundSize: "cover",
-                        cursor: "pointer"
+                        backgroundPosition: "center center",
+                        cursor: "pointer",
+                        float: "left",
+                        marginRight: "5px",
                     });
                     img.appendTo("#composeFileArea");
 
