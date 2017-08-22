@@ -168,8 +168,10 @@
                 $("#windowContents").scroll(function() {
                     if (140 - $("#windowContents").scrollTop() >= 40) {
                         $("#profileHeaderImage").height(140 - $("#windowContents").scrollTop());
+                        $("#profileHeaderImage").velocity({blur: 0}, {queue: false});
                     } else {
                         $("#profileHeaderImage").height(40);
+                        $("#profileHeaderImage").velocity({blur: 30, top: -30, left: -30, right: -30, paddingBottom: "30px"}, {queue: false});
                     }
                 });
 
@@ -931,6 +933,7 @@
                             $("#profileFollowingCount").text(result.data.counts.following);
                             $("#profileFollowersCount").text(result.data.counts.followers);
                             $("#profilePostsCount").text(result.data.counts.posts);
+                            $("#profileBookmarksCount").text(result.data.counts.bookmarks);
                         }
                     });
 
@@ -1003,7 +1006,7 @@
                                                         '<span class="username">' + result.data[i].user.username + '</span>' + repostInfo +
                                                     '</div>' +
                                                     '<div class="postdate">' +
-                                                        '<span class="postRelDateText">' + postRelativeDate + '</span>' +
+                                                        '<span class="postDateText"><span class="postRelDateText">' + postRelativeDate + '</span></span>' +
                                                         '<div class="postcontrol">' +
                                                             '<span class="fa fa-reply fa-fw postReplyButton"></span>' +
                                                             '<span class="fa fa-star fa-fw postStarButton"></span>' +
@@ -1616,11 +1619,14 @@
             #profileHeaderImage {
                 position: fixed;
                 z-index: 12;
-                width: 100%;
+                /* width: 100%; */
                 height: 140px;
                 top: 0;
+                left: 0;
+                right: 0;
                 background-size: cover;
                 background-position: center;
+                overflow: hidden;
             }
 
             #profileAvatar {
@@ -1656,20 +1662,24 @@
             }
 
             #profileCounts {
-                margin-top: 16px;
-                margin-left: 25px;
-                margin-right: 25px;
+                margin-top: 12px;
+                cursor: pointer;
+                background-color: #eee;
             }
 
             #profileCounts div {
                 display: inline-block;
-                margin-left: 5px;
-                margin-right: 5px;
-                margin-bottom: 18px;
+                vertical-align: middle;
+                padding-top: 11px;
+                padding-bottom: 6px;
+                width: 24%;
+                font-weight: bolder;
+                border-top: 1px solid #ddd;
+                border-bottom: 5px solid transparent;
             }
 
-            #profileCounts div span {
-                font-size: 14pt;
+            #profileCounts .profile-counts-selected {
+                border-bottom: 5px solid #bbb;
             }
 
             #profileStream {
@@ -1784,16 +1794,16 @@
                     <p id="profileBio"></p>
                     <div id="profileCounts">
                         <div id="profileFollowing">
-                            <span id="profileFollowingCount">0</span><br>
-                            Following
+                            <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-right" style="font-size: 10pt; margin-left: -3px;"></span> <span id="profileFollowingCount">0</span>
                         </div>
                         <div id="profileFollowers">
-                            <span id="profileFollowersCount">0</span><br>
-                            Followers
+                            <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-left" style="font-size: 10pt; margin-left: -3px;"></span> <span id="profileFollowersCount">0</span>
                         </div>
-                        <div id="profilePosts">
-                            <span id="profilePostsCount">0</span><br>
-                            Posts
+                        <div id="profilePosts" class="profile-counts-selected">
+                            <span class="fa fa-comment"></span> <span id="profilePostsCount">0</span>
+                        </div>
+                        <div id="profileBookmarks">
+                            <span class="fa fa-star"></span> <span id="profileBookmarksCount">0</span>
                         </div>
                     </div>
                 </div>
