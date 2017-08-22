@@ -800,6 +800,12 @@
                                         }
                                     }
 
+                                    for (var j in result.data[i].content.entities.mentions) {
+                                        if (result.data[i].content.entities.mentions[j].id == myUserId) {
+                                            postclass = postclass + " post-mentioned-me"
+                                        }
+                                    }
+
                                     $(".post-latest").removeClass("post-latest");
 
                                     prependHTML = prependHTML +
@@ -1492,7 +1498,6 @@
             }
 
             .postcontrol {
-                background-color: #fff;
                 font-size: 12pt;
                 width: 100px;
                 text-align: right;
@@ -1576,8 +1581,9 @@
                 z-index: 20;
             }
 
-
-
+            .post-mentioned-me {
+                background-color: #ddeeff;
+            }
 
 
 
