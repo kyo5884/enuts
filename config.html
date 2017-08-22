@@ -64,6 +64,11 @@
                 store.set("hideMenubarIcon", $("input[name='hideMenubarIconCheckbox']").prop("checked"));
             });
 
+            $("input[name='roundedIconCheckbox']").prop("checked", store.get("roundedIcon", true));
+            $("#roundedIconCheckbox").click(function() {
+                store.set("roundedIcon", $("input[name='roundedIconCheckbox']").prop("checked"));
+            });
+
             $(document).on('click', 'a[href^="http"]', function(event) {
                 event.preventDefault();
                 shell.openExternal(this.href);
@@ -115,6 +120,7 @@
                 <h1>Stream</h1>
                 These settings need restart to take effect.<br>
                 <br>
+                <label><input type="checkbox" name="roundedIconCheckbox" id="roundedIconCheckbox" value="1"></input>Rounded Usericons</label><br>
                 <label><input type="checkbox" name="absoluteDateCheckbox" id="absoluteDateCheckbox" value="0"></input>Use absolute date instead of relative date</label><br>
                 <label><input type="checkbox" name="includeDirectedPostsCheckbox" id="includeDirectedPostsCheckbox" value="0">Show mentions to unfollowed users in home stream</input></label><br>
             </p>

@@ -116,6 +116,10 @@
                     updateCheck();
                 }
 
+                if (store.get("roundedIcon", true)) {
+                    $(".streams").addClass("streams-rounded-icon");
+                }
+
                 tabSelect(store.get("selectedTab", 0));
 
                 function updateCheck() {
@@ -1537,6 +1541,10 @@
                 height: 48px;
                 border-radius: 5px;
                 cursor: pointer;
+            }
+
+            .streams-rounded-icon .usericon {
+                border-radius: 48px;
             }
 
             .postcontent {
