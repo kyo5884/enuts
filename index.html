@@ -531,6 +531,19 @@
                 } else {
                     closeComposeScreen();
                 }
+
+                if (irtPostId) {
+                    $.ajax({
+                        url: "https://api.pnut.io/v0/posts/" + irtPostId,
+                        type: "GET",
+                        headers: { Authorization: "Bearer " + token },
+                        success: function(result) {
+                            info = $('<div id="composeScreenIrtInfo" style="display: none;">' + result.data.user.username + ": " + result.data.content.text + "</div>");
+                            $("#composeScreen").prepend(info);
+                            info.velocity("slideDown");
+                        }
+                    });
+                }
             }
 
             function closeComposeScreen() {
@@ -542,11 +555,13 @@
                         return false;
                     }
                 }
+
                 $("#composeSpinner").velocity("fadeOut", {duration: 100});
                 $("#composeButton").css("color", "#bbb");
                 $("#composeTextArea").val("");
                 $("#composeTextArea").css("height", "auto");
                 $("#composeScreen").velocity("slideUp", {duration: 300});
+                $("#composeScreenIrtInfo").velocity("slideUp", {complete: $(this).remove()});
 
                 irtPostId = "";
 
@@ -1349,7 +1364,6 @@
                 padding-left: 8px;
                 padding-right: 8px;
                 padding-bottom: 10px;
-                text-align: right;
                 z-index: 30;
                 background-color: #f3f3f3;
                 border-bottom: 1px solid #ddd;
@@ -1407,7 +1421,11 @@
                 cursor: pointer;
             }
 
-
+            #composeScreenIrtInfo {
+                color: #555;
+                font-size: 8pt;
+                margin-bottom: 8px;
+            }
 
 
 
