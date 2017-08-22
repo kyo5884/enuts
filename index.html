@@ -1665,6 +1665,10 @@
                 background-color: #ddeeff;
             }
 
+            .darkmode .post-mentioned-me {
+                background-color: #555;
+            }
+
 
 
 
@@ -1775,7 +1779,7 @@
                 display: inline-block;
                 vertical-align: middle;
                 padding-top: 11px;
-                padding-bottom: 6px;
+                padding-bottom: 2px;
                 width: 24%;
                 font-weight: bolder;
                 border-bottom: 5px solid transparent;
@@ -1789,7 +1793,14 @@
                 text-align: left;
             }
 
+            .profile-counts-icon-label {
+                font-weight: lighter;
+                font-size: 8pt;
+            }
 
+            .darkmode #profileCounts, .darkmode #profileFollowInfo {
+                background-color: #333;
+            }
 
 
 
@@ -1902,16 +1913,20 @@
                     </div>
                     <div id="profileCounts">
                         <div id="profileFollowing">
-                            <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-right" style="font-size: 10pt; margin-left: -3px;"></span> <span id="profileFollowingCount">0</span>
+                            <span class="profile-counts-icon-label">Following</span><br>
+                            <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-right" style="font-size: 10pt; margin-left: -3px;"></span> <span id="profileFollowingCount">0</span><br>
                         </div>
                         <div id="profileFollowers">
-                            <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-left" style="font-size: 10pt; margin-left: -3px;"></span> <span id="profileFollowersCount">0</span>
+                            <span class="profile-counts-icon-label">Followers</span><br>
+                            <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-left" style="font-size: 10pt; margin-left: -3px;"></span> <span id="profileFollowersCount">0</span><br>
                         </div>
                         <div id="profilePosts" class="profile-counts-selected">
-                            <span class="fa fa-comment"></span> <span id="profilePostsCount">0</span>
+                            <span class="profile-counts-icon-label">Posts</span><br>
+                            <span class="fa fa-comment"></span> <span id="profilePostsCount">0</span><br>
                         </div>
                         <div id="profileBookmarks">
-                            <span class="fa fa-star"></span> <span id="profileBookmarksCount">0</span>
+                            <span class="profile-counts-icon-label">Bookmarks</span><br>
+                            <span class="fa fa-star"></span> <span id="profileBookmarksCount">0</span><br>
                         </div>
                     </div>
                 </div>
