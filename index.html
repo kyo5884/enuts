@@ -936,7 +936,12 @@
                         $("#profileHeaderImage").css("background-image", "url(" + result.data.content.cover_image.link + ")");
                         $("#profileAvatar").attr("src", result.data.content.avatar_image.link);
 
-                        $("#profileDisplayname").text(result.data.name);
+                        if (result.data.name != undefined) {
+                            $("#profileDisplayname").text(result.data.name);
+                        } else {
+                            $("#profileDisplayname").text(result.data.username);
+                        }
+                        
                         $("#profileUsername").text("@" + result.data.username);
 
                         $("#profileBio").html(result.data.content.html);
