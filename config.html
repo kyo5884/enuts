@@ -16,7 +16,7 @@
 
             if (process.platform != "darwin") {
                 $("body").css("background-color", "#fff")
-                $("#showMenubarIconLabel").hide();
+                $("#hideMenubarIconLabel").hide();
             }
 
             $("#reAuthButton").click(function() {
@@ -59,9 +59,9 @@
                 store.set("notifyGlobal", $("input[name='notifyGlobalCheckbox']").prop("checked"));
             });
 
-            $("input[name='showMenubarIconCheckbox']").prop("checked", store.get("showMenubarIcon", true));
-            $("#showMenubarIconCheckbox").click(function() {
-                store.set("showMenubarIcon", $("input[name='showMenubarIconCheckbox']").prop("checked"));
+            $("input[name='hideMenubarIconCheckbox']").prop("checked", store.get("hideMenubarIcon", false));
+            $("#hideMenubarIconCheckbox").click(function() {
+                store.set("hideMenubarIcon", $("input[name='hideMenubarIconCheckbox']").prop("checked"));
             });
 
             $(document).on('click', 'a[href^="http"]', function(event) {
@@ -134,7 +134,7 @@
             <p>
                 <h1>Other</h1>
                 <label><input type="checkbox" name="updateCheckCheckbox" id="updateCheckCheckbox" value="1">Check new version at launch</input></label><br>
-                <label id="showMenubarIconLabel"><input type="checkbox" name="showMenubarIconCheckbox" id="showMenubarIconCheckbox" value="1">Show Menubar Icon</input></label>
+                <label id="hideMenubarIconLabel"><input type="checkbox" name="hideMenubarIconCheckbox" id="hideMenubarIconCheckbox" value="1">Hide Menubar Icon</input></label>
             </p>
         </p>
     </div>

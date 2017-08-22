@@ -13,49 +13,50 @@ var force_quit = false;
 
 app.on("ready", function() {
 
-  if (store.get("showMenubarIcon", true)) {
-
-    if (process.platform == "win32") {
-      appIcon = new Tray(__dirname + "/img/enuts_taskbar.png");
-    } else {
-      appIcon = new Tray(__dirname + "/img/enuts_menubar.png");
-    }
-    
-    var appIconMenu = Menu.buildFromTemplate([
-      {
-        label: "Show enuts",
-        click: function() { mainWindow.show(); }
-      },
-      {
-        type: "separator"
-      },
-      {
-        label: "Preferences...",
-        click: function() { createConfigWindow(); }
-      },
-      {
-        label: "Quit",
-        click: function () { app.quit(); }
-      }
-    ]);
-    appIcon.setContextMenu(appIconMenu);
-    appIcon.setToolTip("");
-
-    appIcon.on("double-click", function() {
-      if (process.platform != "darwin") {
-        mainWindow.show();
-      }
-    });
-
+  if (store.get("hideMenubarIcon", false) == false) {
+    showAppIcon();
   }
-
 
   createMainWindow();
   console.log("enuts version " + app.getVersion());
   console.log("electron-store file path: " + store.path);
 });
 
+function showAppIcon() {
+  
+      if (process.platform == "win32") {
+        appIcon = new Tray(__dirname + "/img/enuts_taskbar.png");
+      } else {
+        appIcon = new Tray(__dirname + "/img/enuts_menubar.png");
+      }
+      
+      var appIconMenu = Menu.buildFromTemplate([
+        {
+          label: "Show enuts",
+          click: function() { mainWindow.show(); }
+        },
+        {
+          type: "separator"
+        },
+        {
+          label: "Preferences...",
+          click: function() { createConfigWindow(); }
+        },
+        {
+          label: "Quit",
+          click: function () { app.quit(); }
+        }
+      ]);
+      appIcon.setContextMenu(appIconMenu);
+      appIcon.setToolTip("");
+  
+      appIcon.on("double-click", function() {
+        if (process.platform != "darwin") {
+          mainWindow.show();
+        }
+      });
 
+}
 
 let mainWindow;
 function createMainWindow() {
