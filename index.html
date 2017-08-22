@@ -950,16 +950,21 @@
 
                         $("#profileBio").html(result.data.content.html);
 
-                        if (result.data.you_follow) {
+                        if (user == "me") {
                             $("#profile").addClass("profile-you-follow");
-                            $("#profileFollowButton").html('<span class="fa fa-check-circle"></span> Following');
+                            $("#profileFollowButton").html('<span class="fa fa-check-circle"></span> This is you!');
                         } else {
-                            $("#profile").addClass("profile-you-not-follow");
-                            $("#profileFollowButton").html('<span class="fa fa-user-plus"></span> Follow');
-                        }
+                            if (result.data.you_follow) {
+                                $("#profile").addClass("profile-you-follow");
+                                $("#profileFollowButton").html('<span class="fa fa-check-circle"></span> Following');
+                            } else {
+                                $("#profile").addClass("profile-you-not-follow");
+                                $("#profileFollowButton").html('<span class="fa fa-user-plus"></span> Follow');
+                            }
 
-                        if (result.data.follows_you) {
-                            $("#profileFollowsYouLabel").show();
+                            if (result.data.follows_you) {
+                                $("#profileFollowsYouLabel").show();
+                            }
                         }
 
                         $("#profileFollowingCount").text(result.data.counts.following);
