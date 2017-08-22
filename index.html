@@ -800,9 +800,12 @@
                                         }
                                     }
 
+                                    
                                     for (var j in result.data[i].content.entities.mentions) {
                                         if (result.data[i].content.entities.mentions[j].id == myUserId) {
-                                            postclass = postclass + " post-mentioned-me"
+                                            if (type != "mentions") {
+                                                postclass = postclass + " post-mentioned-me";
+                                            }
                                         }
                                     }
 
