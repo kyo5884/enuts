@@ -171,7 +171,7 @@
                         $("#profileHeaderImage").velocity({blur: 0}, {queue: false});
                     } else {
                         $("#profileHeaderImage").height(40);
-                        $("#profileHeaderImage").velocity({blur: 30, top: -30, left: -30, right: -30, paddingBottom: "30px"}, {queue: false});
+                        $("#profileHeaderImage").velocity({blur: 30}, {queue: false});
                     }
                 });
 
@@ -1619,11 +1619,11 @@
             #profileHeaderImage {
                 position: fixed;
                 z-index: 12;
-                /* width: 100%; */
                 height: 140px;
-                top: 0;
-                left: 0;
-                right: 0;
+                top: -30px;
+                left: -30px;
+                right: -30px;
+                padding-bottom: 30px;
                 background-size: cover;
                 background-position: center;
                 overflow: hidden;
