@@ -550,7 +550,7 @@
                         type: "GET",
                         headers: { Authorization: "Bearer " + token },
                         success: function(result) {
-                            info = $('<div id="composeScreenIrtInfo" style="display: none;">' + result.data.user.username + ": " + result.data.content.text + "</div>");
+                            info = $('<div id="composeScreenIrtInfo" style="display: none;"><span class="fa fa-reply"></span> ' + result.data.user.username + ": " + result.data.content.text + "</div>");
                             $("#composeScreen").prepend(info);
                             info.velocity("slideDown");
                         }
