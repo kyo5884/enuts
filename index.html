@@ -120,8 +120,6 @@
                     $("#windowContents").addClass("streams-rounded-icon");
                 }
 
-                tabSelect(store.get("selectedTab", 0));
-
                 function updateCheck() {
                     var myVersion = app.getVersion();
                     var newVersion;
@@ -425,8 +423,8 @@
                                 myUserId = result.data.id;
                             }
                         });
-
                     }
+                    tabSelect(store.get("selectedTab", 0));
                 });
 
 
@@ -930,9 +928,7 @@
                 $.ajax({
                     url: "https://api.pnut.io/v0/users/" + user,
                     type: "GET",
-                    headers: {
-                        Authorization: "Bearer " + token
-                    },
+                    headers: { Authorization: "Bearer " + token },
                     success: function(result) {
 
                         console.log("user", result);
