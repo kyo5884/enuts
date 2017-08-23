@@ -912,6 +912,10 @@
                 $("#profile").removeClass("profile-you-not-follow");
                 $("#profileFollowsYouLabel").hide();
 
+                $("#profileOptionMenu").css("transform", "translateX(100%)")
+                $("#profileBlockButton").show();
+                $("#profileMuteButton").show();
+
                 $("#profileHeaderImage").css("background-image", "none");
                 $("#profileAvatar").attr("src", "");
 
@@ -949,6 +953,8 @@
                         if (user == "me") {
                             $("#profile").addClass("profile-you-follow");
                             $("#profileFollowButton").html('<span class="fa fa-check-circle"></span> This is you!');
+                            $("#profileBlockButton").hide();
+                            $("#profileMuteButton").hide();
                         } else {
                             if (result.data.you_follow) {
                                 $("#profile").addClass("profile-you-follow");
@@ -1064,6 +1070,14 @@
                 });
             }
 
+            $(document).on("click", "#profileOptionButton", function() {
+                $("#profileOptionMenu").velocity({translateX: ["0%", "100%"], opacity: [1, 0]}, {easing: "easeOutQuint", duration: "500"});
+            });
+
+            $(document).on("click", "#profileOptionCloseButton", function() {
+                $("#profileOptionMenu").velocity({translateX: ["100%", "0%"], opacity: [0, 1]}, {easing: "easeOutQuint", duration: "500"});
+            });
+
             $(document).on("click", "#profileFollowButton", function() {
                 var userId = $("#profileUsername").text();
                 var action = "PUT";
@@ -1090,6 +1104,10 @@
                         }
                     }
                 });
+            });
+
+            $(document).on("click", "#profileOpenWebButton", function() {
+                shell.openExternal("http://pnut.io/" + $("#profileUsername").text());
             });
 
             function tabSelect(tabId, userTabUser) {
@@ -1685,7 +1703,7 @@
                 text-align: center;
             }
 
-            #profileGearButton {
+            #profileOptionButton {
                 float: right;
                 color: #666;
                 font-size: 14pt;
@@ -1696,26 +1714,72 @@
             }
 
             #profileFollowInfo {
+                position: relative;
                 text-align: left;
                 border-top: 1px solid #ddd;
                 background-color: #eee;
+
+                overflow: hidden;
                 
                 padding-top: 11px;
-                padding-bottom: 4px;
+                padding-bottom: 5px;
 
                 padding-left: 11px;
                 padding-right: 11px;
             }
 
-            #profileFollowButton {
+            #profileOptionMenu {
+                position: absolute;
+                background-color: #eee;
+
+                padding-top: 11px;
+                padding-bottom: 5px;
+                padding-left: 11px;
+                padding-right: 11px;
+
+                left: 0;
+                top: 0;
+                bottom: 0;
+                right: 0;
+                transform: translateX(100%);
+            }
+
+            #profileOptionCloseButton {
+                float: right;
+                color: #666;
+                font-size: 14pt;
+                background: none;
+                border: none;
+                outline: 0;
+                cursor: pointer;
+            }
+
+            .profile-action-button {
                 border-radius: 5px;
                 outline: 0;
                 cursor: pointer;
                 padding: 6px;
                 border: none;
+                color: #000;
+                background-color: #fff;
+                border: 1px solid #333;
+                transition: background-color 0.25s ease-in, color 0.25s ease-in, border 0.25s ease-in, color 0.25s ease-in;
+            }
+            
+            #profileBlockButton {
+                background-color: #c44;
+                border-color: #d33;
                 color: #fff;
-                border: 1px solid #3ad;
-                transition: background-color 0.25s ease-in, color 0.25s ease-in;
+            }
+            
+            #profileMuteButton {
+                /* background-color: #882;
+                border-color: #771; */
+            }
+
+            #profileOpenWebButton {
+                /* background-color: #382;
+                border-color: #271; */
             }
 
             #profileFollowsYouLabel {
@@ -1726,10 +1790,13 @@
 
             .profile-you-follow #profileFollowButton {
                 background-color: #3ad;
+                border-color: #3ad;
+                color: #fff;
             }
             
             .profile-you-not-follow #profileFollowButton {
                 background-color: #fff;
+                border-color: #3ad;
                 color: #3ad;
             }
 
@@ -1788,7 +1855,7 @@
             #profileCounts div {
                 display: inline-block;
                 vertical-align: middle;
-                padding-top: 11px;
+                padding-top: 5px;
                 padding-bottom: 2px;
                 width: 24%;
                 font-weight: bolder;
@@ -1917,9 +1984,15 @@
                     </p>
                     <p id="profileBio"></p>
                     <div id="profileFollowInfo">
-                        <button id="profileFollowButton">Follow</button>
+                        <button id="profileFollowButton" class="profile-action-button">Follow</button>
                         <span id="profileFollowsYouLabel" style="display: none;">Follows You</span>
-                        <button id="profileGearButton"><span class="fa fa-gear"></span></button>
+                        <button id="profileOptionButton"><span class="fa fa-ellipsis-h"></span></button>
+                        <div id="profileOptionMenu">
+                            <button class="profile-action-button" id="profileBlockButton"><span class="fa fa-ban"></span> Block</button>
+                            <button class="profile-action-button" id="profileMuteButton"><span class="fa fa-eye-slash"></span> mute</button>
+                            <button class="profile-action-button" id="profileOpenWebButton"><span class="fa fa-globe"></span> Open in pnut.io</button>
+                            <button id="profileOptionCloseButton"><span class="fa fa-close"></span></button>
+                        </div>
                     </div>
                     <div id="profileCounts">
                         <div id="profileFollowing">
