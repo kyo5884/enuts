@@ -1206,6 +1206,18 @@
                 $("#profileOptionMenu").velocity({translateX: ["100%", "0%"], opacity: [0, 1]}, {easing: "easeOutQuint", duration: "500"});
             }
 
+            $(document).on("click", "#profileCounts div", function() {
+                $("#profileCounts div").removeClass("profile-counts-selected");
+                $(this).addClass("profile-counts-selected");
+            });
+
+            $(document).on("click", "#profileBookmarksButton", function() {
+                
+            });
+
+
+
+
             function tabSelect(tabId, userTabUser) {
 
                 if (selectedTab != tabId || userTabUser !== undefined) { 
@@ -2105,19 +2117,19 @@
                         </div>
                     </div>
                     <div id="profileCounts">
-                        <div id="profileFollowing">
+                        <div id="profileFollowingButton">
                             <span class="profile-counts-icon-label">Following</span><br>
                             <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-right" style="font-size: 10pt; margin-left: -3px;"></span> <span id="profileFollowingCount">0</span><br>
                         </div>
-                        <div id="profileFollowers">
+                        <div id="profileFollowersButton">
                             <span class="profile-counts-icon-label">Followers</span><br>
                             <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-left" style="font-size: 10pt; margin-left: -3px;"></span> <span id="profileFollowersCount">0</span><br>
                         </div>
-                        <div id="profilePosts" class="profile-counts-selected">
+                        <div id="profilePostsButton" class="profile-counts-selected">
                             <span class="profile-counts-icon-label">Posts</span><br>
                             <span class="fa fa-comment"></span> <span id="profilePostsCount">0</span><br>
                         </div>
-                        <div id="profileBookmarks">
+                        <div id="profileBookmarksButton">
                             <span class="profile-counts-icon-label">Bookmarks</span><br>
                             <span class="fa fa-star"></span> <span id="profileBookmarksCount">0</span><br>
                         </div>
@@ -2126,6 +2138,7 @@
                 <div id="profileStream"></div>
                 <div id="profileFollowers" style="display: none;"></div>
                 <div id="profileFollowing" style="display: none;"></div>
+                <div id="profileBookmarks" style="display: none;"></div>
             </div>
 
             <div id="updateNotify" class="bottomNotify">
