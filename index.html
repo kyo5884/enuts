@@ -1210,9 +1210,25 @@
                 $("#profileCounts div").removeClass("profile-counts-selected");
                 $(this).addClass("profile-counts-selected");
             });
-
+            
             $(document).on("click", "#profileBookmarksButton", function() {
-                
+                $(".profile-tab").hide();
+                $("#profileBookmarks").show();
+            });
+
+            $(document).on("click", "#profileFollowingButton", function() {
+                $(".profile-tab").hide();
+                $("#profileFollowing").show();
+            });
+
+            $(document).on("click", "#profileFollowersButton", function() {
+                $(".profile-tab").hide();
+                $("#profileFollowers").show();
+            });
+
+            $(document).on("click", "#profilePostsButton", function() {
+                $(".profile-tab").hide();
+                $("#profileStream").show();
             });
 
 
@@ -2135,10 +2151,10 @@
                         </div>
                     </div>
                 </div>
-                <div id="profileStream"></div>
-                <div id="profileFollowers" style="display: none;"></div>
-                <div id="profileFollowing" style="display: none;"></div>
-                <div id="profileBookmarks" style="display: none;"></div>
+                <div id="profileStream" class="profile-tab"></div>
+                <div id="profileFollowers" class="profile-tab" style="display: none;"></div>
+                <div id="profileFollowing" class="profile-tab" style="display: none;"></div>
+                <div id="profileBookmarks" class="profile-tab" style="display: none;"></div>
             </div>
 
             <div id="updateNotify" class="bottomNotify">
