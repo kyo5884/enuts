@@ -910,7 +910,10 @@
                 $("#profileStream").empty();
                 $("#profile").removeClass("profile-you-follow");
                 $("#profile").removeClass("profile-you-not-follow");
+                $("#profile").removeClass("profile-you-blocked");
+                $("#profile").removeClass("profile-you-muted");
                 $("#profileFollowsYouLabel").hide();
+                $("#profileMutedLabel").hide();
 
                 $("#profileOptionMenu").css("transform", "translateX(100%)")
                 $("#profileBlockButton").show();
@@ -966,6 +969,22 @@
 
                             if (result.data.follows_you) {
                                 $("#profileFollowsYouLabel").show();
+                            }
+
+                            if (result.data.you_blocked) {
+                                $("#profile").addClass("profile-you-blocked");
+                                $("#profileFollowButton").html('<span class="fa fa-ban"></span> Blocked');
+                                $("#profileBlockButton").html('<span class="fa fa-ban"></span> Blocked');
+                            } else {
+                                $("#profileBlockButton").html('<span class="fa fa-ban"></span> Block');
+                            }
+
+                            if (result.data.you_muted) {
+                                $("#profile").addClass("profile-you-muted");
+                                $("#profileMuteButton").html('<span class="fa fa-eye-slash"></span> Unmute');
+                                $("#profileMutedLabel").show();
+                            } else {
+                                $("#profileMuteButton").html('<span class="fa fa-eye-slash"></span> Mute');
                             }
                         }
 
@@ -1070,12 +1089,12 @@
                 });
             }
 
-            $(document).on("click", "#profileOptionButton", function() {
-                $("#profileOptionMenu").velocity({translateX: ["0%", "100%"], opacity: [1, 0]}, {easing: "easeOutQuint", duration: "500"});
+            $(document).on("click", "#profileOptionButton, #profileMutedLabel", function() {
+                profileOptionOpen();
             });
 
             $(document).on("click", "#profileOptionCloseButton", function() {
-                $("#profileOptionMenu").velocity({translateX: ["100%", "0%"], opacity: [0, 1]}, {easing: "easeOutQuint", duration: "500"});
+                profileOptionClose();
             });
 
             $(document).on("click", "#profileFollowButton", function() {
@@ -1106,9 +1125,48 @@
                 });
             });
 
+            $(document).on("click", "#profileMuteButton", function() {
+                var userId = $("#profileUsername").text();
+                var action = "PUT";
+                if ( $("#profile").hasClass("profile-you-muted") ) {
+                    action = "DELETE";
+                } else {
+                    action = "PUT";
+                }
+
+                $.ajax({
+                    url: "https://api.pnut.io/v0/users/" + userId + "/mute",
+                    type: action,
+                    headers: {Authorization: "Bearer " + token},
+                    success: function(result) {
+                        console.log("mute", result);
+                        if (action == "PUT") {
+                            $("#profile").addClass("profile-you-muted");
+                            $("#profileMuteButton").html('<span class="fa fa-eye-slash"></span> Unmute');
+                            $("#profileMutedLabel").show();
+                        } else {
+                            $("#profile").removeClass("profile-you-muted");
+                            $("#profileMuteButton").html('<span class="fa fa-eye-slash"></span> Mute');
+                            $("#profileMutedLabel").hide();
+                        }
+
+                        profileOptionClose();
+                    }
+                });
+            });
+
             $(document).on("click", "#profileOpenWebButton", function() {
                 shell.openExternal("http://pnut.io/" + $("#profileUsername").text());
+                profileOptionClose();
             });
+
+
+            function profileOptionOpen() {
+                $("#profileOptionMenu").velocity({translateX: ["0%", "100%"], opacity: [1, 0]}, {easing: "easeOutQuint", duration: "500"});
+            }
+            function profileOptionClose() {
+                $("#profileOptionMenu").velocity({translateX: ["100%", "0%"], opacity: [0, 1]}, {easing: "easeOutQuint", duration: "500"});
+            }
 
             function tabSelect(tabId, userTabUser) {
 
@@ -1703,12 +1761,14 @@
                 text-align: center;
             }
 
-            #profileOptionButton {
-                float: right;
+            #profileOptionButton, #profileOptionCloseButton  {
                 color: #666;
-                font-size: 14pt;
                 background: none;
                 border: none;
+                padding-top: 7px;
+                padding-bottom: 7px;
+                padding-left: 3px;
+                padding-right: 3px;
                 outline: 0;
                 cursor: pointer;
             }
@@ -1746,12 +1806,6 @@
 
             #profileOptionCloseButton {
                 float: right;
-                color: #666;
-                font-size: 14pt;
-                background: none;
-                border: none;
-                outline: 0;
-                cursor: pointer;
             }
 
             .profile-action-button {
@@ -1760,32 +1814,36 @@
                 cursor: pointer;
                 padding: 6px;
                 border: none;
-                color: #000;
-                background-color: #fff;
-                border: 1px solid #333;
+                color: #fff;
+                background-color: #111;
+                border: 1px solid #000;
                 transition: background-color 0.25s ease-in, color 0.25s ease-in, border 0.25s ease-in, color 0.25s ease-in;
             }
             
             #profileBlockButton {
                 background-color: #c44;
-                border-color: #d33;
-                color: #fff;
+                border-color: #b33;
             }
             
             #profileMuteButton {
-                /* background-color: #882;
-                border-color: #771; */
+                background-color: #d80;
+                border-color: #c80;
             }
 
             #profileOpenWebButton {
                 /* background-color: #382;
                 border-color: #271; */
             }
-
-            #profileFollowsYouLabel {
+            
+            #profileFollowsYouLabel, #profileMutedLabel {
+                display: inline-block;
                 font-size: 9pt;
                 color: #666;
                 margin-left: 5px;
+            }
+
+            #profileMutedLabel {
+                cursor: pointer;
             }
 
             .profile-you-follow #profileFollowButton {
@@ -1834,6 +1892,10 @@
 
             #profileBio {
                 margin-top: 10px;
+
+                margin-left: 10px;
+                margin-right: 10px;
+
                 margin-bottom: 20px;
             }
 
@@ -1984,12 +2046,18 @@
                     </p>
                     <p id="profileBio"></p>
                     <div id="profileFollowInfo">
-                        <button id="profileFollowButton" class="profile-action-button">Follow</button>
-                        <span id="profileFollowsYouLabel" style="display: none;">Follows You</span>
-                        <button id="profileOptionButton"><span class="fa fa-ellipsis-h"></span></button>
+                        <div style="float: left;">
+                            <button id="profileFollowButton" class="profile-action-button">Follow</button> 
+                            <span id="profileFollowsYouLabel" style="display: none;">Follows You</span>
+                        </div>
+                        <div style="float: right;">
+                            <span id="profileMutedLabel" style="display: none;"><span class="fa fa-eye-slash"></span> Muted</span>
+                            <button id="profileOptionButton"><span class="fa fa-gear"></span></button>
+                        </div>
+                        <div style="clear: both;"></div>
                         <div id="profileOptionMenu">
                             <button class="profile-action-button" id="profileBlockButton"><span class="fa fa-ban"></span> Block</button>
-                            <button class="profile-action-button" id="profileMuteButton"><span class="fa fa-eye-slash"></span> mute</button>
+                            <button class="profile-action-button" id="profileMuteButton"><span class="fa fa-eye-slash"></span> Mute</button>
                             <button class="profile-action-button" id="profileOpenWebButton"><span class="fa fa-globe"></span> Open in pnut.io</button>
                             <button id="profileOptionCloseButton"><span class="fa fa-close"></span></button>
                         </div>
