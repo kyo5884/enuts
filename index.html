@@ -908,6 +908,10 @@
             function getProfile(user) {
                     
                 $("#profileStream").empty();
+                $("#profileBookmarks").empty();
+                $("#profileFollowing").empty();
+                $("#profileFollowers").empty();
+
                 $("#profile").removeClass("profile-you-follow");
                 $("#profile").removeClass("profile-you-not-follow");
                 $("#profile").removeClass("profile-you-blocked");
@@ -1002,7 +1006,7 @@
                         Authorization: "Bearer " + token
                     },
                     success: function(result) {
-                        console.log(result);
+                        console.log("userposts", result);
 
                         if (result.data.length) {
                             var prependHTML = "";
@@ -1083,6 +1087,97 @@
                             }
 
                             $("#profileStream").prepend(prependHTML);
+                            $(".post-latest").velocity("slideDown", {duration: 300, delay: 300});
+                        }
+                    }
+                });
+
+                $.ajax({
+                    url: "https://api.pnut.io/v0/users/" + user + "/bookmarks",
+                    type: "GET",
+                    headers: { Authorization: "Bearer " + token },
+                    success: function(result) {
+                        console.log("userbookmarks", result);
+
+                        if (result.data.length) {
+                            var prependHTML = "";
+                            for (var i in result.data) {
+                                if (!result.data[i].is_deleted) {
+                                    var postDate = new Date(result.data[i].created_at).toLocaleString();
+                                    var postRelativeDate = getRelativeDate(postDate);
+                                    var postImage = "";
+                                    var repostInfo = "";
+
+                                    var deleteButton, postclass ="";
+
+                                    if ("repost_of" in result.data[i]) {
+                                        repostInfo = ' <span class="repostedUsername"><span class="fa fa-retweet"></span> ' + result.data[i].user.username + '</span>'
+
+                                        result.data[i] = result.data[i].repost_of;
+                                    }
+
+                                    if (result.data[i].user.id == myUserId) {
+                                        postclass = postclass + " post-mypost";
+                                    } else {
+                                        deleteButton = "";
+                                    }
+
+                                    if (result.data[i].you_bookmarked) {
+                                        postclass = postclass + " post-bookmarked";
+                                    }
+
+                                    if (result.data[i].you_reposted) {
+                                        postclass = postclass + " post-reposted";
+                                    }
+
+                                    if ("raw" in result.data[i]) {
+                                        if (result.data[i].raw.length) {
+                                            for (var j in result.data[i].raw) {
+                                                if (result.data[i].raw[j].value.type == "photo") {
+                                                    var imgUrl = result.data[i].raw[j].value.url;
+                                                    postImage = '<a href="' + imgUrl + '"><img class="postimage" src="' + imgUrl + '"></a><br>';
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (result.data[i].content.entities.links.length) {
+                                        for (var j in result.data[i].content.entities.links) {
+                                            var url = result.data[i].content.entities.links[j].link;
+                                            if (url.match(/.*\.png|.*\.jpeg|.*\.jpg|.*\.gif/)) {
+                                                postImage = '<a href="' + url + '"><img class="postimage" src="' + url + '"></a><br>';
+                                            }
+                                        }
+                                    }
+
+                                    $(".post-latest").removeClass("post-latest");
+
+                                    prependHTML = prependHTML +
+                                        '<div class="post post-latest' + postclass + '" post_id=' + result.data[i].id + ' post_created_at="' + result.data[i].created_at + '" style="display: none;">' +
+                                            '<img class="usericon" src="' + result.data[i].user.content.avatar_image.link + '">' +
+                                            '<div class="postcontent">' +
+                                                '<div class="usernameArea">' +
+                                                    '<span class="username">' + result.data[i].user.username + '</span>' + repostInfo +
+                                                '</div>' +
+                                                '<div class="postdate">' +
+                                                    '<span class="postDateText"><span class="postRelDateText">' + postRelativeDate + '</span></span>' +
+                                                    '<div class="postcontrol">' +
+                                                        '<span class="fa fa-reply fa-fw postReplyButton"></span>' +
+                                                        '<span class="fa fa-star fa-fw postStarButton"></span>' +
+                                                        '<span class="fa fa-retweet fa-fw postRepostButton"></span>' +
+                                                        '<span class="fa fa-trash-o fa-fw postDeleteButton"></span>' +
+                                                        '<span class="fa fa-ellipsis-h fa-fw postDetailButton"></span>' +
+                                                    '</div>' +
+                                                '</div>' +
+                                                '<div class="posttext">' +
+                                                    result.data[i].content.html +
+                                                '</div>' +
+                                                postImage +
+                                            '</div>' +
+                                        '</div>'
+                                }
+                            }
+
+                            $("#profileBookmarks").prepend(prependHTML);
                             $(".post-latest").velocity("slideDown", {duration: 300, delay: 300});
                         }
                     }
@@ -1998,7 +2093,7 @@
                 border-bottom: 5px solid #bbb;
             }
 
-            #profileStream {
+            .profile-tab {
                 text-align: left;
             }
 
@@ -2130,6 +2225,7 @@
                             <button class="profile-action-button" id="profileMuteButton"><span class="fa fa-eye-slash"></span> Mute</button>
                             <button class="profile-action-button" id="profileOpenWebButton"><span class="fa fa-globe"></span> Open in pnut.io</button>
                             <button id="profileOptionCloseButton"><span class="fa fa-close"></span></button>
+                            <div style="clear: both;"></div>
                         </div>
                     </div>
                     <div id="profileCounts">
