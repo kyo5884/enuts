@@ -934,6 +934,11 @@
                 $("#profileFollowingCount").text("");
                 $("#profileFollowersCount").text("");
                 $("#profilePostsCount").text("");
+                
+                $(".profile-tab").hide();
+                $("#profileCounts div").removeClass("profile-counts-selected");
+                $("#profileStream").show();
+                $("#profilePostsButton").addClass("profile-counts-selected");
 
 
                 $.ajax({
@@ -1182,6 +1187,40 @@
                         }
                     }
                 });
+
+
+                $.ajax({
+                    url: "https://api.pnut.io/v0/users/" + user + "/followers",
+                    type: "GET",
+                    headers: { Authorization: "Bearer " + token },
+                    data: { count: 200 },
+                    success: function(result) {
+                        console.log("userfollowers", result);
+
+                        if (result.data.length) {
+
+                            var prependHTML = "";
+                            for (var i in result.data) {
+                                prependHTML = prependHTML + 
+                                '<div class="post">' +
+                                    '<img class="usericon" src="' + result.data[i].content.avatar_image.link + '">' +
+                                    '<div class="postcontent">' +
+                                        '<div class="usernameArea">' +
+                                            '<span class="username">' + result.data[i].username + '</span> ' + result.data[i].name +
+                                        '</div>' +
+                                        '<div class="posttext">' +
+                                            '<span class="fa fa-comment"></span> ' + result.data[i].counts.posts +
+                                            ' <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-left" style="font-size: 10pt; margin-left: -3px;"></span>' + result.data[i].counts.following + 
+                                            ' <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-right" style="font-size: 10pt; margin-left: -3px;"></span>' + result.data[i].counts.followers + 
+                                        '</div>' +
+                                    '</div>' +
+                                '</div>'
+                            }
+
+                            $("#profileFollowers").prepend(prependHTML);
+                        }
+                    }
+                });
             }
 
             $(document).on("click", "#profileOptionButton, #profileMutedLabel", function() {
@@ -1376,7 +1415,11 @@
                         $("#titlebar").removeClass("titlebar-profiletab");
                     }
                 } else {
-                    $("#windowContents").animate({scrollTop: 0});
+                    if (tabId == 4 && $("#windowContents").scrollTop() == 0) {
+                        getProfile("me");
+                    } else {
+                        $("#windowContents").animate({scrollTop: 0});
+                    }
                 }
             }
 
@@ -1868,7 +1911,10 @@
                 border: 1px solid #222;
             }
 
-
+            #profileFollowers .posttext, #profileFollowing .posttext {
+                color: #666;
+                font-size: 10pt;
+            }
 
 
             .postthread {
