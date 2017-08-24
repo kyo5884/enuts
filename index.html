@@ -157,7 +157,7 @@
                     tabSelect($(this).index());
                 });
 
-                $(document).on("click", ".usericon, .username", function() {
+                $(document).on("click", ".usericon, .username, #profileFollowing .postcontent, #profileFollowers .postcontent", function() {
                     var username = "@" + $(this).parents(".post").find(".username").text();
                     tabSelect(4, username);
                 });
@@ -1200,18 +1200,30 @@
                         if (result.data.length) {
 
                             var prependHTML = "";
+
                             for (var i in result.data) {
+                                var followsYou = "";
+
+                                if (result.data[i].follows_you) {
+                                    followsYou = " Follows You ";
+                                }
+
+                                if (result.data[i].name == undefined) {
+                                    result.data[i].name = "";
+                                }
+
                                 prependHTML = prependHTML + 
                                 '<div class="post">' +
                                     '<img class="usericon" src="' + result.data[i].content.avatar_image.link + '">' +
                                     '<div class="postcontent">' +
                                         '<div class="usernameArea">' +
-                                            '<span class="username">' + result.data[i].username + '</span> ' + result.data[i].name +
+                                            '<span class="username">' + result.data[i].username + '</span> ' + result.data[i].name + '<br>' +
                                         '</div>' +
                                         '<div class="posttext">' +
                                             '<span class="fa fa-comment"></span> ' + result.data[i].counts.posts +
                                             ' <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-left" style="font-size: 10pt; margin-left: -3px;"></span>' + result.data[i].counts.following + 
-                                            ' <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-right" style="font-size: 10pt; margin-left: -3px;"></span>' + result.data[i].counts.followers + 
+                                            ' <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-right" style="font-size: 10pt; margin-left: -3px;"></span>' + result.data[i].counts.followers + '<br>' +
+                                            followsYou +
                                         '</div>' +
                                     '</div>' +
                                 '</div>'
@@ -1911,12 +1923,6 @@
                 border: 1px solid #222;
             }
 
-            #profileFollowers .posttext, #profileFollowing .posttext {
-                color: #666;
-                font-size: 10pt;
-            }
-
-
             .postthread {
                 position: fixed;
                 top: 40px;
@@ -1960,6 +1966,16 @@
             .darkmode .post-mentioned-me {
                 background-color: #555;
             }
+
+            #profileFollowers .posttext, #profileFollowing .posttext {
+                color: #666;
+                font-size: 10pt;
+            }
+
+            #profileFollowers .post, #profileFollowing .post {
+                cursor: pointer;
+            }
+
 
 
 
