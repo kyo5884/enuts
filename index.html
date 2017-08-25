@@ -1887,9 +1887,6 @@
                 right: 0;
                 display: none;
             }
-            .darkmode .postcontrol {
-                background-color: #222;
-            }
 
             .postcontrol span {
                 cursor: pointer;
@@ -1960,11 +1957,11 @@
             }
 
             .post-mentioned-me {
-                background-color: #ddeeff;
+                background-color: #e8f5ff;
             }
 
             .darkmode .post-mentioned-me {
-                background-color: #555;
+                background-color: #333;
             }
 
             #profileFollowers .posttext, #profileFollowing .posttext {
@@ -2013,7 +2010,7 @@
 
             #profileOptionMenu {
                 position: absolute;
-                background-color: #eee;
+                background-color: inherit;
 
                 padding-top: 11px;
                 padding-bottom: 5px;
@@ -2025,6 +2022,10 @@
                 bottom: 0;
                 right: 0;
                 transform: translateX(100%);
+            }
+            
+            .darkmode #profileFollowInfo {
+                border-top: 1px solid #666;
             }
 
             #profileOptionCloseButton {
@@ -2111,6 +2112,10 @@
 
             #profileDetails {
                 border-bottom: 1px solid #ddd;
+            }
+
+            .darkmode #profileDetails {
+                border-bottom: 1px solid #666;
             }
 
             #profileUsernameArea {
