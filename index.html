@@ -1203,13 +1203,20 @@
 
                             for (var i in result.data) {
                                 var followsYou = "";
+                                var profileBio = "";
 
                                 if (result.data[i].follows_you) {
                                     followsYou = " Follows You ";
                                 }
-
+                                
                                 if (result.data[i].name == undefined) {
                                     result.data[i].name = "";
+                                }
+
+                                if (result.data[i].content.text == undefined) {
+                                    profileBio = "";
+                                } else {
+                                    profileBio = '<p class="profileBio">' + result.data[i].content.text + '</p>';
                                 }
 
                                 prependHTML = prependHTML + 
@@ -1219,11 +1226,16 @@
                                         '<div class="usernameArea">' +
                                             '<span class="username">' + result.data[i].username + '</span> ' + result.data[i].name + '<br>' +
                                         '</div>' +
+                                        '<div class="postdate">' +
+                                            '<span class="">' + followsYou + '</span>' +
+                                        '</div>' +
                                         '<div class="posttext">' +
-                                            '<span class="fa fa-comment"></span> ' + result.data[i].counts.posts +
-                                            ' <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-left" style="font-size: 10pt; margin-left: -3px;"></span>' + result.data[i].counts.following + 
-                                            ' <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-right" style="font-size: 10pt; margin-left: -3px;"></span>' + result.data[i].counts.followers + '<br>' +
-                                            followsYou +
+                                            '<p>' +
+                                                '<span class="fa fa-comment"></span> ' + result.data[i].counts.posts +
+                                                ' <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-left" style="font-size: 10pt; margin-left: -3px;"></span>' + result.data[i].counts.following + 
+                                                ' <span class="fa fa-user-circle-o"></span><span class="fa fa-arrow-circle-right" style="font-size: 10pt; margin-left: -3px;"></span>' + result.data[i].counts.followers + '<br>' +
+                                            '</p>' +
+                                            profileBio +
                                         '</div>' +
                                     '</div>' +
                                 '</div>'
@@ -1964,9 +1976,14 @@
                 background-color: #333;
             }
 
-            #profileFollowers .posttext, #profileFollowing .posttext {
+            #profileFollowers p, #profileFollowing p {
+                margin-top: 8px;
+                margin-bottom: 0;
+            }
+
+            .profileBio {
                 color: #666;
-                font-size: 10pt;
+                font-size: 9pt;
             }
 
             #profileFollowers .post, #profileFollowing .post {
