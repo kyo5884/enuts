@@ -77,12 +77,7 @@
                     ipcRenderer.send("winMinimize");
                 });
 
-
                 //HIDDEN COMMAND!
-
-                if (store.get("darkmode", false)) {
-                    $("body").addClass("darkmode");
-                }
 
                 var input = [];
                 var command = [38,38,40,40,37,39,37,39,66,65];
@@ -92,14 +87,14 @@
 
                     if (input.toString().indexOf(command) >= 0) {
 
-                        if (store.get("darkmode", false) == false) {
-                            store.set("darkmode", true);
-                            $("body").addClass("darkmode");
+                        if (store.get("theme", "light") != "dark") {
+                            store.set("theme", "dark");
+                            $("body").addClass("theme-dark");
                             $("#hiddenFeatureNotify").velocity("slideDown");
                             $("#hiddenFeatureNotify").velocity("fadeOut", {duration: 3000, delay: 3000});
                         } else {
-                            store.set("darkmode", false);
-                            $("body").removeClass("darkmode");
+                            store.set("theme", "light");
+                            $("body").removeClass("theme-dark");
                         }
                         input = [];
                     }
@@ -124,6 +119,9 @@
                     } else {
                         $("#windowContents").removeClass("streams-rounded-icon");
                     }
+
+                    $("body").addClass("theme-" + store.get("theme", "light"));
+
                     updateRelativeDate();
                 }
 
@@ -1791,7 +1789,7 @@
                 z-index: 3;
             }
 
-            .darkmode #windowContents {
+            .theme-dark #windowContents {
                 background-color: #222;
                 color: #ddd;
             }
@@ -1876,7 +1874,7 @@
                 cursor: pointer;
             }
 
-            .darkmode span[itemprop=mention], .darkmode span[itemprop=tag] {
+            .theme-dark span[itemprop=mention], .theme-dark span[itemprop=tag] {
                 color: #bbb;
             }
 
@@ -1886,7 +1884,7 @@
                 min-height: 48px;
             }
 
-            .darkmode .post {
+            .theme-dark .post {
                 border-bottom: 1px solid #333;
             }
 
@@ -1908,7 +1906,7 @@
                 color: #999;
             }
 
-            .darkmode a {
+            .theme-dark a {
                 color: #bbb;
             }
 
@@ -1999,7 +1997,7 @@
                 cursor: pointer;
             }
 
-            .darkmode .post-interaction .posttext {
+            .theme-dark .post-interaction .posttext {
                 background-color: #333;
                 border: 1px solid #222;
             }
@@ -2044,7 +2042,7 @@
                 background-color: #e8f5ff;
             }
 
-            .darkmode .post-mentioned-me {
+            .theme-dark .post-mentioned-me {
                 background-color: #333;
             }
 
@@ -2113,7 +2111,7 @@
                 transform: translateX(100%);
             }
             
-            .darkmode #profileFollowInfo {
+            .theme-dark #profileFollowInfo {
                 border-top: 1px solid #666;
             }
 
@@ -2203,7 +2201,7 @@
                 border-bottom: 1px solid #ddd;
             }
 
-            .darkmode #profileDetails {
+            .theme-dark #profileDetails {
                 border-bottom: 1px solid #666;
             }
 
@@ -2258,7 +2256,7 @@
                 font-size: 8pt;
             }
 
-            .darkmode #profileCounts, .darkmode #profileFollowInfo {
+            .theme-dark #profileCounts, .theme-dark #profileFollowInfo {
                 background-color: #333;
             }
 
