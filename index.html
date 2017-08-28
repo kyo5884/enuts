@@ -116,8 +116,15 @@
                     updateCheck();
                 }
 
-                if (store.get("roundedIcon", true)) {
-                    $("#windowContents").addClass("streams-rounded-icon");
+                initBySettings();
+
+                function initBySettings() {
+                    if (store.get("roundedIcon", true)) {
+                        $("#windowContents").addClass("streams-rounded-icon");
+                    } else {
+                        $("#windowContents").removeClass("streams-rounded-icon");
+                    }
+                    updateRelativeDate();
                 }
 
                 function updateCheck() {
@@ -147,11 +154,15 @@
 
 
                 setInterval(function() {
+                    updateRelativeDate();
+                }, 10000);
+
+                function updateRelativeDate() {
                     for (var i = 0; $(".post").length > i; i++) {
                         var relTime = getRelativeDate($(".post:eq(" + i + ")").attr("post_created_at"));
                         $(".post:eq(" + i + ") .postRelDateText").text(relTime);
                     }
-                }, 10000);
+                }
 
                 $("#titlebar-center .titlebar-button").click(function(){
                     tabSelect($(this).index());
@@ -208,6 +219,10 @@
                             tabSelect(4);
                             break;
                     }
+                });
+
+                ipcRenderer.on("settingsUpdated", (e, msg) => {
+                    initBySettings();
                 });
 
                 $("#composeButton").click(function(){
@@ -1901,6 +1916,7 @@
                 width: 48px;
                 height: 48px;
                 border-radius: 5px;
+                transition: border-radius 1s ease-in-out;
                 cursor: pointer;
             }
 

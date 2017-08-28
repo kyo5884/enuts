@@ -2,7 +2,7 @@
 <head>
     <script>
 
-        //const ipcRenderer = require("electron").ipcRenderer;
+        const ipcRenderer = require("electron").ipcRenderer;
         const Store = require("electron-store");
         const store = new Store();
         const app = require("electron").remote.app;
@@ -74,6 +74,10 @@
                 shell.openExternal(this.href);
             });
 
+            $(document).on('click', 'input', function() {
+                ipcRenderer.send("settingsUpdated");
+            });
+
         });
 
     </script>
@@ -118,8 +122,6 @@
         <p>
             <p>
                 <h1>Stream</h1>
-                These settings need restart to take effect.<br>
-                <br>
                 <label><input type="checkbox" name="roundedIconCheckbox" id="roundedIconCheckbox" value="1"></input>Rounded Usericons</label><br>
                 <label><input type="checkbox" name="absoluteDateCheckbox" id="absoluteDateCheckbox" value="0"></input>Use absolute date instead of relative date</label><br>
                 <label><input type="checkbox" name="includeDirectedPostsCheckbox" id="includeDirectedPostsCheckbox" value="0">Show mentions to unfollowed users in home stream</input></label><br>
@@ -142,6 +144,7 @@
                 <label><input type="checkbox" name="updateCheckCheckbox" id="updateCheckCheckbox" value="1">Check new version at launch</input></label><br>
                 <label id="hideMenubarIconLabel"><input type="checkbox" name="hideMenubarIconCheckbox" id="hideMenubarIconCheckbox" value="0">Hide Menubar Icon</input></label>
             </p>
+            Some settings need restart to take effect.<br>
         </p>
     </div>
     <div id="credits">

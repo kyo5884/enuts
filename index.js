@@ -390,6 +390,10 @@ ipcMain.on("winRestore", () => {
   mainWindow.restore();
 });
 
+ipcMain.on("settingsUpdated", () => {
+  mainWindow.webContents.send("settingsUpdated");
+});
+
 ipcMain.on("CreateAuthWindow", () => {
   var authWindow = new BrowserWindow({
       width: 800, 
