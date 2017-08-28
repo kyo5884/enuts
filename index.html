@@ -87,15 +87,16 @@
 
                     if (input.toString().indexOf(command) >= 0) {
 
-                        if (store.get("theme", "light") != "dark") {
-                            store.set("theme", "dark");
-                            $("body").addClass("theme-dark");
+                        if (store.get("theme", "light") != "cyber") {
+                            store.set("theme", "cyber");
                             $("#hiddenFeatureNotify").velocity("slideDown");
                             $("#hiddenFeatureNotify").velocity("fadeOut", {duration: 3000, delay: 3000});
                         } else {
                             store.set("theme", "light");
-                            $("body").removeClass("theme-dark");
                         }
+
+                        initBySettings();
+
                         input = [];
                     }
                 });
@@ -121,6 +122,7 @@
                     }
 
                     $("body").removeClass("theme-dark");
+                    $("body").removeClass("theme-cyber");
                     $("body").addClass("theme-" + store.get("theme", "light"));
 
                     updateRelativeDate();
@@ -1797,6 +1799,12 @@
                 color: #ddd;
             }
 
+            .theme-cyber #windowContents {
+                background: linear-gradient(to bottom, #104, #505);
+                background-color: #404;
+                color: #eee;
+            }
+
             #composeScreen {
                 position: relative;
                 display: none;
@@ -1872,13 +1880,18 @@
 
 
 
-            span[itemprop=mention], span[itemprop=tag] {
+            span[itemprop=mention], span[itemprop=tag], a {
                 color: #999;
                 cursor: pointer;
             }
 
-            .theme-dark span[itemprop=mention], .theme-dark span[itemprop=tag] {
+            .theme-dark span[itemprop=mention], .theme-dark span[itemprop=tag], .theme-dark a  {
                 color: #bbb;
+            }
+
+            .theme-cyber span[itemprop=mention], .theme-cyber span[itemprop=tag], .theme-cyber a  {
+                color: #dd4;
+                text-shadow: 0 0 10px #cc3;
             }
 
             .post {
@@ -1889,6 +1902,10 @@
 
             .theme-dark .post {
                 border-bottom: 1px solid #333;
+            }
+
+            .theme-cyber .post {
+                border-bottom: 1px solid rgba(222, 222, 255, 0.75);
             }
 
             .post.post-bookmarked .postStarButton {
@@ -1903,14 +1920,6 @@
             }
             .post-mypost .postRepostButton {
                 display: none;
-            }
-
-            a {
-                color: #999;
-            }
-
-            .theme-dark a {
-                color: #bbb;
             }
 
             .usericon {
@@ -1935,6 +1944,11 @@
                 font-weight: bold;
             }
 
+            .theme-cyber .username {
+                color: #f4a;
+                text-shadow: 0 0 10px #e39;
+            }
+
             .usernameArea {
                 margin-bottom: 3px;
                 float: left;
@@ -1951,6 +1965,14 @@
                 float: right;
                 color: #999;
                 font-size: 9pt;
+            }
+
+            .theme-cyber .postdate, .theme-cyber .postvia, .theme-cyber .postcounts {
+                color: #5ff;
+                text-shadow: 0 0 10px #4ee;
+            }
+            .theme-cyber .postcontrol {
+                color: #fff;
             }
 
             .postcounts {
@@ -2005,10 +2027,15 @@
                 border: 1px solid #222;
             }
 
+            .theme-cyber .post-interaction .posttext {
+                background-color: #457;
+                border: 1px solid #346;
+            }
+
             .postthread {
                 position: fixed;
                 top: 40px;
-                background-color: #fff;
+                background-color: inherit;
                 width: 100%;
                 height: 100%;
                 z-index: 14;
@@ -2017,6 +2044,14 @@
 
             .postthread-mentions, .postthread-mentions .postcontrol {
                 background-color: #eee;
+            }
+
+            .theme-dark .postthread-mentions, .theme-dark .postthread-mentions .postcontrol {
+                background-color: #111;
+            }
+
+            .theme-cyber .postthread-mentions, .theme-cyber .postthread-mentions .postcontrol {
+                background-color: #202;
             }
 
             .postthread .posttext {
@@ -2047,6 +2082,10 @@
 
             .theme-dark .post-mentioned-me {
                 background-color: #333;
+            }
+
+            .theme-cyber .post-mentioned-me {
+                background-color: rgba(255, 255, 255, 0.25);
             }
 
             #profileFollowers p, #profileFollowing p {
@@ -2261,6 +2300,10 @@
 
             .theme-dark #profileCounts, .theme-dark #profileFollowInfo {
                 background-color: #333;
+            }
+
+            .theme-cyber #profileCounts, .theme-cyber #profileFollowInfo {
+                background-color: rgba(255, 255, 255, 0.5);
             }
 
 
