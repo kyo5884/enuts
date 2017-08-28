@@ -89,8 +89,13 @@
 
                         if (store.get("theme", "light") != "cyber") {
                             store.set("theme", "cyber");
-                            $("#hiddenFeatureNotify").velocity("slideDown");
-                            $("#hiddenFeatureNotify").velocity("fadeOut", {duration: 3000, delay: 3000});
+                            $("#windowContents").append('<div id="hiddenFeatureOverlay"><img src="img/enuts-80s-effect.gif?' + (new Date).getTime() + '"></div>');
+                            $("#hiddenFeatureNotify").velocity("slideDown", {duration: 500, delay: 4000});
+                            $("#hiddenFeatureNotify").velocity("fadeOut", {duration: 3000, delay: 7000});
+                            $("#hiddenFeatureOverlay").velocity("fadeIn");
+                            $("#hiddenFeatureOverlay").velocity("fadeOut", {duration: 1000, delay: 3000, complete: function() {
+                                $("#hiddenFeatureOverlay").remove();
+                            }});
                         } else {
                             store.set("theme", "light");
                         }
@@ -2339,6 +2344,24 @@
             #hiddenFeatureNotify {
                 color: white;
                 background-color: magenta;
+            }
+
+            #hiddenFeatureOverlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                right: 0;
+                z-index: 100;
+                background-color: #000;
+            }
+
+            #hiddenFeatureOverlay img {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 100%;
+                height: auto;
             }
 
             .postthread-close {
