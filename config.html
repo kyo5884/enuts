@@ -69,6 +69,11 @@
                 store.set("roundedIcon", $("input[name='roundedIconCheckbox']").prop("checked"));
             });
 
+            $("input[name='themeRadio']").val([store.get("theme", "light")]);
+            $("input[name='themeRadio']").click(function() {
+                store.set("theme", $("input[name='themeRadio']:checked").val());
+            });
+
             $(document).on('click', 'a[href^="http"]', function(event) {
                 event.preventDefault();
                 shell.openExternal(this.href);
@@ -120,6 +125,11 @@
 <body>
     <div id="settings">
         <p>
+            <p>
+                <h1>Theme</h1>
+                <label><input type="radio" name="themeRadio" id="themeRadio" value="light" checked="checked"></input>Light</label><br>
+                <label><input type="radio" name="themeRadio" id="themeRadio" value="dark"></input>Dark</label><br>
+            </p>
             <p>
                 <h1>Stream</h1>
                 <label><input type="checkbox" name="roundedIconCheckbox" id="roundedIconCheckbox" value="1"></input>Rounded Usericons</label><br>
