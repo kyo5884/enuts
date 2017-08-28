@@ -90,12 +90,12 @@
                         if (store.get("theme", "light") != "cyber") {
                             store.set("theme", "cyber");
                             $("#windowContents").append('<div id="hiddenFeatureOverlay"><img src="img/enuts-80s-effect.gif?' + (new Date).getTime() + '"></div>');
-                            $("#hiddenFeatureNotify").velocity("slideDown", {duration: 500, delay: 4000});
-                            $("#hiddenFeatureNotify").velocity("fadeOut", {duration: 3000, delay: 7000});
-                            $("#hiddenFeatureOverlay").velocity("fadeIn");
-                            $("#hiddenFeatureOverlay").velocity("fadeOut", {duration: 1000, delay: 3000, complete: function() {
+                            $("#hiddenFeatureOverlay").show();
+                            $("#hiddenFeatureOverlay").velocity("fadeOut", {duration: 1000, delay: 4000, complete: function() {
                                 $("#hiddenFeatureOverlay").remove();
                             }});
+                            $("#hiddenFeatureNotify").velocity("slideDown", {duration: 500, delay: 4000});
+                            $("#hiddenFeatureNotify").velocity("fadeOut", {duration: 3000, delay: 7000});
                         } else {
                             store.set("theme", "light");
                         }
