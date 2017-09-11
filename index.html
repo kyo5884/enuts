@@ -1127,6 +1127,10 @@
                     url: "https://api.pnut.io/v0/users/" + user + "/bookmarks",
                     type: "GET",
                     headers: { Authorization: "Bearer " + token },
+                    data: {
+                        include_post_raw: 1,
+                        count: 200
+                    },
                     success: function(result) {
                         console.log("userbookmarks", result);
 
