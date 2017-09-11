@@ -1637,13 +1637,19 @@
             }
 
             $(document).on("click", "span[itemprop=tag]", function() {
-                search($(this).text().substr(1), "tag");
-                $("#searchInput").val($(this).text());
+                search($(this).text(), "tag");
+                $("#searchInput").val($(this).text().substr(1));
+                $("#searchButton").hide();
                 $("#searchClearButton").show();
                 tabSelect(5);
             });
 
             function search(query, type, sort) {
+
+                if (query.startsWith("#")) {
+                    query = query.substr(1);
+                }
+
                 if (query.length) {
 
                     if (sort === undefined) { sort = "id"; }
@@ -1774,12 +1780,22 @@
 
             $(document).on("keydown", "#searchInput", function(e) {
                 if (e.keyCode == 13) {
-                    search($('#searchInput').val());
-                }
-                
-                if ($("#searchClearButton").css("display") == "none") {
+                    $("#searchButton").velocity("fadeOut");
                     $("#searchClearButton").velocity("fadeIn");
+                    search($('#searchInput').val(), $('select[name="searchTypeSelect"]').val(), $('select[name="searchSortSelect"]').val());
                 }
+            });
+
+            $(document).on("click", "#searchButton", function() {
+                $("#searchButton").velocity("fadeOut");
+                $("#searchClearButton").velocity("fadeIn");
+                search($('#searchInput').val(), $('select[name="searchTypeSelect"]').val(), $('select[name="searchSortSelect"]').val());
+            });
+
+            $(document).on("change", 'select[name="searchSortSelect"], select[name="searchTypeSelect"]', function() {
+                $("#searchButton").velocity("fadeOut");
+                $("#searchClearButton").velocity("fadeIn");
+                search($('#searchInput').val(), $('select[name="searchTypeSelect"]').val(), $('select[name="searchSortSelect"]').val());
             });
 
             $(document).on("click", "#searchClearButton", function() {
@@ -1787,6 +1803,7 @@
                 $("#searchInput").val("");
                 $("#searchNoResults").remove();
                 $("#searchInput").focus();
+                $("#searchButton").velocity("fadeIn");
                 $("#searchClearButton").velocity("fadeOut");
             });
 
@@ -2552,31 +2569,56 @@
                 z-index: 20;
             }
 
+
+
+
+
+
             #search {
                 overflow: hidden;
+            }
+
+            #searchOptions {
+                background-color: #eee;
+                height: 68px;
+                border-bottom: 1px solid #ddd;
+                font-size: 10pt;
+            }
+
+            .theme-dark #searchOptions {
+                color: white;
+                background-color: #222;
+                border-bottom: 1px solid #333;
             }
 
             #searchInput {
                 width: 100%;
                 font-size: 11pt;
                 height: 16px;
-                padding-top: 8px;
-                padding-left: 28px;
-                padding-right: 8px;
-                padding-bottom: 8px;
+                padding: 8px;
                 outline: 0;
-                margin: 0;
+                margin-left: 20px;
                 border: 0;
                 background-color: #eee;
                 border-bottom: 1px solid #ddd;
             }
 
             #searchTypeSelect {
-                position: absolute;
-                outline: 0;
-                right: 16px;
-                top: -1px;
                 margin: 8px;
+                position: absolute;
+                top: -1px;
+                right: 0;
+                width: 80px;
+                outline: 0;
+            }
+
+            #searchDetailOptions {
+                margin: 8px;
+            }
+
+            #searchSortSelect {
+                margin: 8px;
+                outline: 0;
             }
 
             .theme-dark #searchInput {
@@ -2585,7 +2627,7 @@
                 border-bottom: 1px solid #333;
             }
 
-            #search .fa-search {
+            #searchButton {
                 position: absolute;
                 left: 0;
                 top: 1px;
@@ -2595,7 +2637,7 @@
 
             #searchClearButton {
                 position: absolute;
-                right: 0;
+                left: 0;
                 top: 2px;
                 font-size: 11pt;
                 padding: 8px;
@@ -2606,7 +2648,7 @@
 
             #searchResults {
                 position: absolute;
-                top: 32px;
+                top: 68px;
                 bottom: 0;
                 left: 0;
                 right: 0;
@@ -2729,16 +2771,19 @@
                 <div id="profileBookmarks" class="profile-tab" style="display: none;"></div>
             </div>
             <div id="search" class="streams" style="display: none;">
-                <div class="fa fa-search"></div><input type="text" placeholder="Search pnut.io" id="searchInput"></input><div id="searchClearButton" class="fa fa-times-circle"></div>
-                <select name="searchTypeSelect" id="searchTypeSelect">
-                    <option value="keyword">Keyword</option>
-                    <option value="tag">Tag</option>
-                    <option value="user">User</option>
-                </select>
-                <select name="searchSortSelect" id="searchSortSelect">
-                        <option value="time">Sort by Time</option>
-                        <option value="relevance">Sort by Relevance</option>
+                <div id="searchOptions">
+                    <input type="text" placeholder="Search pnut.io" id="searchInput"></input><div id="searchButton" class="fa fa-search"></div><div id="searchClearButton" class="fa fa-times-circle"></div>
+                    <select name="searchTypeSelect" id="searchTypeSelect">
+                        <option value="keyword">Keyword</option>
+                        <option value="tag">Tag</option>
                     </select>
+                    <span id="searchDetailOptions">
+                        Sort by<select name="searchSortSelect" id="searchSortSelect">
+                            <option value="id">Time</option>
+                            <option value="relevance">Relevance</option>
+                        </select>
+                    </span>
+                </div>
                 <div id="searchResults">
                 </div>
             </div>
