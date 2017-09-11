@@ -1533,10 +1533,10 @@
                         $("#titlebar").removeClass("titlebar-profiletab");
                     }
                 } else {
-                    if (tabId == 4 && $("#windowContents").scrollTop() == 0) {
+                    if (tabId == 4 && $(".streams").scrollTop() == 0) {
                         getProfile("me");
                     } else {
-                        $("#windowContents").animate({scrollTop: 0});
+                        $(".streams").animate({scrollTop: 0});
                     }
                 }
             }
