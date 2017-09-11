@@ -18,7 +18,7 @@
             const store = new Config();
             
             var token;
-            var myUserId;
+            var myUserId, myUsername;
             var selectedTab = 0;
             var latestStreamPostId, latestGlobalPostId, latestMentionsPostId, latestInteractionsId = 0;
             var irtPostId;
@@ -438,6 +438,7 @@
                             success: function(result) {
                                 $("#composeScreen .usericon").attr("src", result.data.content.avatar_image.link);
                                 myUserId = result.data.id;
+                                myUsername = result.data.username;
                             }
                         });
                     }
@@ -538,7 +539,7 @@
 
 
 
-            function openComposeScreen(text){
+            function openComposeScreen(text) {
                 if ($("#composeScreen").css("display") == "none") {
                     $("#composeScreen").velocity("slideDown", {duration: 300});
                     $("#composeTextArea").val(text);
