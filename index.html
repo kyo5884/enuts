@@ -31,11 +31,7 @@
 
                 //init layout
                 $(window).resize(function(){
-                    if (process.platform == "darwin") {
-                        $("#innerComposeScreen").width(window.innerWidth - 72);
-                    } else {
-                        $("#innerComposeScreen").width(window.innerWidth - 90);
-                    }
+                    $("#innerComposeScreen").width(window.innerWidth - 72);
                 });
 
                 $(window).resize();
