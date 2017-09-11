@@ -1643,21 +1643,26 @@
                 tabSelect(5);
             });
 
-            function search(query, type) {
+            function search(query, type, sort) {
                 if (query.length) {
+
+                    if (sort === undefined) { sort = "id"; }
+                    if (type === undefined) { type = "keyword"; }
 
                     var searchData = {};
                     if (type == "tag") {
                         searchData = {
                             include_post_raw: 1,
                             count: 200,
-                            tags: query
+                            tags: query,
+                            order: sort
                         };
-                    } else {
+                    } else if (type == "keyword") {
                         searchData = {
                             include_post_raw: 1,
                             count: 200,
-                            q: query
+                            q: query,
+                            order: sort
                         };
                     }
 
@@ -2566,6 +2571,14 @@
                 border-bottom: 1px solid #ddd;
             }
 
+            #searchTypeSelect {
+                position: absolute;
+                outline: 0;
+                right: 16px;
+                top: -1px;
+                margin: 8px;
+            }
+
             .theme-dark #searchInput {
                 color: white;
                 background-color: #222;
@@ -2717,7 +2730,17 @@
             </div>
             <div id="search" class="streams" style="display: none;">
                 <div class="fa fa-search"></div><input type="text" placeholder="Search pnut.io" id="searchInput"></input><div id="searchClearButton" class="fa fa-times-circle"></div>
-                <div id="searchResults"></div>
+                <select name="searchTypeSelect" id="searchTypeSelect">
+                    <option value="keyword">Keyword</option>
+                    <option value="tag">Tag</option>
+                    <option value="user">User</option>
+                </select>
+                <select name="searchSortSelect" id="searchSortSelect">
+                        <option value="time">Sort by Time</option>
+                        <option value="relevance">Sort by Relevance</option>
+                    </select>
+                <div id="searchResults">
+                </div>
             </div>
             <div id="updateNotify" class="bottomNotify">
                 <div style="margin: 8px;">
