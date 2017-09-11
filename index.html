@@ -231,6 +231,9 @@
                         case "profile":
                             tabSelect(4);
                             break;
+                        case "search":
+                            tabSelect(5);
+                            break;
                     }
                 });
 
@@ -426,7 +429,7 @@
                         }
                     });
                 }
-
+                
                 $(document).on("click", ".postthread-close", closePostThread);
 
                 ipcRenderer.on("token", (ev, msg) => {
@@ -1498,6 +1501,10 @@
                         case 3:
                             $("#global").velocity("fadeIn", {duration: 250});
                             break;
+                        case 5:
+                            $("#search").velocity("fadeIn", {duration: 250});
+                            break;
+
                         case 4:
                             
                             if (userTabUser === undefined) {
@@ -1626,6 +1633,148 @@
                     }
                 });
             }
+
+            $(document).on("click", "span[itemprop=tag]", function() {
+                search($(this).text().substr(1), "tag");
+                tabSelect(5);
+            });
+
+            function search(query, type) {
+                if (query.length) {
+
+                    var searchData = {};
+                    if (type == "tag") {
+                        searchData = {
+                            include_post_raw: 1,
+                            count: 200,
+                            tags: query
+                        };
+                    } else {
+                        searchData = {
+                            include_post_raw: 1,
+                            count: 200,
+                            q: query
+                        };
+                    }
+
+                    $("#searchResults").empty();
+                    $("#streamSpinner").velocity("fadeIn");
+
+                    $.ajax({
+                        url: "https://api.pnut.io/v0/posts/search",
+                        type: "GET",
+                        headers: { Authorization: "Bearer " + token },
+                        data: searchData,
+                        success: function(result) {
+                            console.log(query, result);
+                        
+                            if (result.data.length) {
+                                var prependHTML = "";
+                                for (var i in result.data) {
+                                    if (!result.data[i].is_deleted) {
+                                        var postDate = new Date(result.data[i].created_at).toLocaleString();
+                                        var postRelativeDate = getRelativeDate(postDate);
+                                        var postImage = "";
+                                        var repostInfo = "";
+
+                                        var deleteButton, postclass ="";
+
+                                        if ("repost_of" in result.data[i]) {
+                                            repostInfo = ' <span class="repostedUsername"><span class="fa fa-retweet"></span> ' + result.data[i].user.username + '</span>'
+
+                                            result.data[i] = result.data[i].repost_of;
+                                        }
+
+                                        if (result.data[i].user.id == myUserId) {
+                                            postclass = postclass + " post-mypost";
+                                        } else {
+                                            deleteButton = "";
+                                        }
+
+                                        if (result.data[i].you_bookmarked) {
+                                            postclass = postclass + " post-bookmarked";
+                                        }
+
+                                        if (result.data[i].you_reposted) {
+                                            postclass = postclass + " post-reposted";
+                                        }
+
+                                        if ("raw" in result.data[i]) {
+                                            if (result.data[i].raw.length) {
+                                                for (var j in result.data[i].raw) {
+                                                    if (result.data[i].raw[j].value.type == "photo") {
+                                                        var imgUrl = result.data[i].raw[j].value.url;
+                                                        if (imgUrl.startsWith("http")) {
+                                                            postImage = '<a href="' + imgUrl + '"><img class="postimage" src="' + imgUrl + '"></a><br>';
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        if (result.data[i].content.entities.links.length) {
+                                            for (var j in result.data[i].content.entities.links) {
+                                                var url = result.data[i].content.entities.links[j].link;
+                                                if (url.match(/.*\.png|.*\.jpeg|.*\.jpg|.*\.gif/) && url.startsWith("http")) {
+                                                    postImage = '<a href="' + url + '"><img class="postimage" src="' + url + '"></a><br>';
+                                                }
+                                            }
+                                        }
+
+                                        $(".post-latest").removeClass("post-latest");
+
+                                        prependHTML = prependHTML +
+                                            '<div class="post post-latest' + postclass + '" post_id=' + result.data[i].id + ' post_created_at="' + result.data[i].created_at + '" style="display: none;">' +
+                                                '<img class="usericon" src="' + result.data[i].user.content.avatar_image.link + '">' +
+                                                '<div class="postcontent">' +
+                                                    '<div class="usernameArea">' +
+                                                        '<span class="username">' + result.data[i].user.username + '</span>' + repostInfo +
+                                                    '</div>' +
+                                                    '<div class="postdate">' +
+                                                        '<span class="postDateText"><span class="postRelDateText">' + postRelativeDate + '</span></span>' +
+                                                        '<div class="postcontrol">' +
+                                                            '<span class="fa fa-reply fa-fw postReplyButton"></span>' +
+                                                            '<span class="fa fa-star fa-fw postStarButton"></span>' +
+                                                            '<span class="fa fa-retweet fa-fw postRepostButton"></span>' +
+                                                            '<span class="fa fa-trash-o fa-fw postDeleteButton"></span>' +
+                                                            '<span class="fa fa-ellipsis-h fa-fw postDetailButton"></span>' +
+                                                        '</div>' +
+                                                    '</div>' +
+                                                    '<div class="posttext">' +
+                                                        result.data[i].content.html +
+                                                    '</div>' +
+                                                    postImage +
+                                                '</div>' +
+                                            '</div>'
+                                    }
+                                }
+
+                                $("#searchResults").append(prependHTML);
+                                $(".post-latest").velocity("slideDown", {duration: 300, delay: 300});
+
+                            } else {
+
+                                $("#searchResults").append('<div id="searchNoResults">No search results for "' + query + '".</div>');
+
+                            }
+
+                            $("#streamSpinner").velocity("fadeOut", {duration: 300});
+                        }
+                    });
+                }
+            }
+
+            $(document).on("keydown", "#searchInput", function(e) {
+                if (e.keyCode == 13) {
+                    search($('#searchInput').val());
+                }
+            });
+
+            $(document).on("click", "#searchClearButton", function() {
+                $("#searchResults .post").velocity("fadeOut", {complete: $("#searchResults .post").remove()})
+                $("#searchInput").val("");
+                $("#searchNoResults").remove();
+                $("#searchInput").focus();
+            });
 
             function closePostThread() {
                 $(".postthread, .postthread-titlebar").velocity({marginTop: window.innerHeight},{
@@ -2380,6 +2529,47 @@
                 z-index: 20;
             }
 
+            #searchInput {
+                width: 100%;
+                font-size: 11pt;
+                padding-top: 8px;
+                padding-left: 28px;
+                padding-right: 8px;
+                padding-bottom: 8px;
+                outline: 0;
+                margin: 0;
+                border: 0;
+                background-color: #eee;
+                border-bottom: 1px solid #ddd;
+            }
+
+            #search .fa-search {
+                position: absolute;
+                left: 0;
+                top: 1px;
+                font-size: 11pt;
+                padding: 8px;
+            }
+
+            #searchClearButton {
+                position: absolute;
+                right: 0;
+                top: 2px;
+                font-size: 11pt;
+                padding: 8px;
+                cursor: pointer;
+            }
+
+            #searchNoResults {
+                position: absolute;
+                color: #666;
+                top: 50%;
+                width: 100%;
+                font-size: 12pt;
+                text-align: center;
+                font-style: italic;
+            }
+
         </style>
     </head>
     <body>
@@ -2390,6 +2580,7 @@
                 <span class="titlebar-button fa fa-bullseye fa-fw" id="interactionsButton" style="margin-bottom: 2px;"></span>
                 <span class="titlebar-button fa fa-globe fa-fw" id="globalButton"></span>
                 <span class="titlebar-button fa fa-user fa-fw" id="myProfileButton"></span>
+                <span class="titlebar-button fa fa-search fa-fw" id="searchTabButton" style="margin-bottom: 7px;"></span>
             </div>
             <div id="titlebar-edge">
                 <span class="titlebar-button fa fa-pencil" id="composeButton"></span>
@@ -2476,6 +2667,10 @@
                 <div id="profileFollowers" class="profile-tab" style="display: none;"></div>
                 <div id="profileFollowing" class="profile-tab" style="display: none;"></div>
                 <div id="profileBookmarks" class="profile-tab" style="display: none;"></div>
+            </div>
+            <div id="search" class="streams" style="display: none;">
+                <div class="fa fa-search"></div><input type="text" placeholder="Search pnut.io" id="searchInput"></input><div id="searchClearButton" class="fa fa-times-circle"></div>
+                <div id="searchResults"></div>
             </div>
 
             <div id="updateNotify" class="bottomNotify">
