@@ -11,6 +11,8 @@ var token;
 var appIcon;
 var force_quit = false;
 
+var configWindow = null;
+
 app.on("ready", function() {
 
   if (store.get("hideMenubarIcon", false) == false) {
@@ -364,18 +366,27 @@ function createMainWindow() {
 }
 
 function createConfigWindow() {
-  var configWindow = new BrowserWindow({
-    width: 300,
-    height: 500,
-    resizable: false,
-    minimizable: false,
-    maximizable: false,
-    show: false,
-    title: "Preferences"
-  });
-  configWindow.loadURL("file://" + __dirname + "/config.html");
-  configWindow.setMenu(null);
-  configWindow.show();
+  if (configWindow != null) {
+    configWindow.show();
+  } else {
+    configWindow = new BrowserWindow({
+      width: 300,
+      height: 500,
+      resizable: false,
+      minimizable: false,
+      maximizable: false,
+      show: false,
+      title: "Preferences"
+    });
+    configWindow.loadURL("file://" + __dirname + "/config.html");
+    configWindow.setMenu(null);
+    configWindow.show();
+    
+    configWindow.on("closed", function() {
+      configWindow = null;
+    });
+    
+  }
 }
 
 ipcMain.on("winMaximize", () => {
