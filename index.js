@@ -200,6 +200,13 @@ function createMainWindow() {
           }
         },
         {
+          label: "Search",
+          accelerator: "CmdOrCtrl+6",
+          click: function() {
+            mainWindow.webContents.send("menu", "search");
+          }
+        },
+        {
           type: "separator"
         },
         {
@@ -212,13 +219,13 @@ function createMainWindow() {
 
 
         
-        // {
-        //   label: 'Reload HTML',
-        //   accelerator: 'CmdOrCtrl+Shift+R',
-        //   click: function (item, focusedWindow) {
-        //     if (focusedWindow) focusedWindow.reload();
-        //   }
-        // },
+        {
+          label: 'Reload HTML',
+          accelerator: 'CmdOrCtrl+Shift+R',
+          click: function (item, focusedWindow) {
+            if (focusedWindow) focusedWindow.reload();
+          }
+        },
         
 
         
@@ -240,19 +247,19 @@ function createMainWindow() {
         
 
         
-        // {
-        //   label: 'Toggle Developer Tools',
-        //   accelerator: (function () {
-        //     if (process.platform === 'darwin') {
-        //       return 'Alt+Command+I'
-        //     } else {
-        //       return 'Ctrl+Shift+I'
-        //     }
-        //   })(),
-        //   click: function (item, focusedWindow) {
-        //     if (focusedWindow) focusedWindow.toggleDevTools()
-        //   }
-        // }
+        {
+          label: 'Toggle Developer Tools',
+          accelerator: (function () {
+            if (process.platform === 'darwin') {
+              return 'Alt+Command+I'
+            } else {
+              return 'Ctrl+Shift+I'
+            }
+          })(),
+          click: function (item, focusedWindow) {
+            if (focusedWindow) focusedWindow.toggleDevTools()
+          }
+        }
 
 
 

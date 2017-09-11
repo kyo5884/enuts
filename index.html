@@ -1508,6 +1508,7 @@
                             break;
                         case 5:
                             $("#search").velocity("fadeIn", {duration: 250});
+                            $("#searchInput").focus();
                             break;
 
                         case 4:
@@ -1967,11 +1968,7 @@
             }
 
             .streams {
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
+                height: 100%;
                 overflow-y: scroll;
             }
 
@@ -2663,7 +2660,7 @@
                     <div style="clear: both;"></div>
                 </div>
                 <div style="clear: both;"></div>
-            </div>
+            </div>    
             <div id="streamSpinner">
                 <span class="fa fa-refresh fa-spin"></span>
             </div>
@@ -2726,7 +2723,6 @@
                 <div class="fa fa-search"></div><input type="text" placeholder="Search pnut.io" id="searchInput"></input><div id="searchClearButton" class="fa fa-times-circle"></div>
                 <div id="searchResults"></div>
             </div>
-
             <div id="updateNotify" class="bottomNotify">
                 <div style="margin: 8px;">
                     <span class="fa fa-info-circle"></span> New version <span id="updateNotifyNewVersion"></span> available. <a href="http://kyo5884.tk/enuts">Download</a>
