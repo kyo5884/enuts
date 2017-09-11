@@ -1641,6 +1641,8 @@
 
             $(document).on("click", "span[itemprop=tag]", function() {
                 search($(this).text().substr(1), "tag");
+                $("#searchInput").val($(this).text());
+                $("#searchClearButton").show();
                 tabSelect(5);
             });
 
