@@ -199,18 +199,22 @@ function createMainWindow() {
             mainWindow.webContents.send("menu", "profile");
           }
         },
-
-
-
         {
           type: "separator"
+        },
+        {
+          label: 'Reload',
+          accelerator: 'CmdOrCtrl+R',
+          click: function () {
+            mainWindow.webContents.send("reload");
+          }
         },
 
 
         
         {
-          label: 'Reload',
-          accelerator: 'CmdOrCtrl+R',
+          label: 'Reload Window',
+          accelerator: 'CmdOrCtrl+Shift+R',
           click: function (item, focusedWindow) {
             if (focusedWindow) focusedWindow.reload();
           }

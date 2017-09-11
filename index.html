@@ -113,6 +113,13 @@
                 setInterval("getStream('global')", 30000);
                 setInterval("getInteractions()", 30000);
 
+                ipcRenderer.on("reload", function() {
+                    getStream("stream");
+                    getStream("global");
+                    getStream("mentions");
+                    getInteractions();
+                });
+
                 if (store.get("updateCheck", true)) {
                     updateCheck();
                 }
@@ -729,7 +736,6 @@
                     }
                 });
             }
-
 
             function getStream(type) {
                 var typeUrl;
