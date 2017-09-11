@@ -1751,7 +1751,7 @@
 
                             } else {
 
-                                $("#searchResults").append('<div id="searchNoResults">No search results for "' + query + '".</div>');
+                                $("#searchResults").append('<div id="searchNoResults">(｡>﹏<｡)<br>No search results for "' + query + '".</div>');
 
                             }
 
@@ -1765,6 +1765,10 @@
                 if (e.keyCode == 13) {
                     search($('#searchInput').val());
                 }
+                
+                if ($("#searchClearButton").css("display") == "none") {
+                    $("#searchClearButton").velocity("fadeIn");
+                }
             });
 
             $(document).on("click", "#searchClearButton", function() {
@@ -1772,6 +1776,7 @@
                 $("#searchInput").val("");
                 $("#searchNoResults").remove();
                 $("#searchInput").focus();
+                $("#searchClearButton").velocity("fadeOut");
             });
 
             function closePostThread() {
@@ -1873,6 +1878,10 @@
                 margin-right: auto;
                 margin-top: 10px;
                 text-align: center;
+            }
+
+            #titlebar-center .titlebar-button {
+                width: 24px;
             }
 
             #titlebar-edge {
@@ -2530,6 +2539,7 @@
             #searchInput {
                 width: 100%;
                 font-size: 11pt;
+                height: 16px;
                 padding-top: 8px;
                 padding-left: 28px;
                 padding-right: 8px;
@@ -2539,10 +2549,12 @@
                 border: 0;
                 background-color: #eee;
                 border-bottom: 1px solid #ddd;
+                z-index: 50;
             }
 
             #search .fa-search {
                 position: absolute;
+                z-index: 51;
                 left: 0;
                 top: 1px;
                 font-size: 11pt;
@@ -2551,15 +2563,28 @@
 
             #searchClearButton {
                 position: absolute;
+                z-index: 51;
                 right: 0;
                 top: 2px;
                 font-size: 11pt;
                 padding: 8px;
                 cursor: pointer;
+
+                display: none;
+            }
+
+            #searchResults {
+                position: absolute;
+                top: 32px;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                overflow: scroll;
             }
 
             #searchNoResults {
                 position: absolute;
+                margin-top: -50px;
                 color: #666;
                 top: 50%;
                 width: 100%;
@@ -2568,17 +2593,22 @@
                 font-style: italic;
             }
 
+            #searchNoResults::first-line {
+                font-size: 24pt;
+                font-style: normal;
+            }
+
         </style>
     </head>
     <body>
         <div id="titlebar">
             <div id="titlebar-center">
-                <span class="titlebar-button fa fa-home fa-fw" id="streamButton" style="color: #fff"></span>
-                <span class="titlebar-button fa fa-at fa-fw" id="mentionsButton"></span>
-                <span class="titlebar-button fa fa-bullseye fa-fw" id="interactionsButton" style="margin-bottom: 2px;"></span>
-                <span class="titlebar-button fa fa-globe fa-fw" id="globalButton"></span>
-                <span class="titlebar-button fa fa-user fa-fw" id="myProfileButton"></span>
-                <span class="titlebar-button fa fa-search fa-fw" id="searchTabButton" style="margin-bottom: 7px;"></span>
+                <span class="titlebar-button fa fa-home" id="streamButton" style="color: #fff"></span>
+                <span class="titlebar-button fa fa-at" id="mentionsButton"></span>
+                <span class="titlebar-button fa fa-bullseye" id="interactionsButton" style="margin-bottom: 2px;"></span>
+                <span class="titlebar-button fa fa-globe" id="globalButton"></span>
+                <span class="titlebar-button fa fa-user" id="myProfileButton"></span>
+                <span class="titlebar-button fa fa-search" id="searchTabButton" style="margin-bottom: 7px;"></span>
             </div>
             <div id="titlebar-edge">
                 <span class="titlebar-button fa fa-pencil" id="composeButton"></span>
