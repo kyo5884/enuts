@@ -69,6 +69,11 @@
                 store.set("roundedIcon", $("input[name='roundedIconCheckbox']").prop("checked"));
             });
 
+            $("input[name='doNotIncludeUsernameReplyMyOwnPostCheckbox']").prop("checked", store.get("doNotIncludeUsernameReplyMyOwnPost", false));
+            $("input[name='doNotIncludeUsernameReplyMyOwnPostCheckbox']").click(function() {
+                store.set("doNotIncludeUsernameReplyMyOwnPost", $("input[name='doNotIncludeUsernameReplyMyOwnPostCheckbox']").prop("checked"));
+            });
+
             $("input[name='themeRadio']").val([store.get("theme", "light")]);
             $("input[name='themeRadio']").click(function() {
                 store.set("theme", $("input[name='themeRadio']:checked").val());
@@ -135,6 +140,10 @@
                 <label><input type="checkbox" name="roundedIconCheckbox" id="roundedIconCheckbox" value="1"></input>Rounded Usericons</label><br>
                 <label><input type="checkbox" name="absoluteDateCheckbox" id="absoluteDateCheckbox" value="0"></input>Use absolute date instead of relative date</label><br>
                 <label><input type="checkbox" name="includeDirectedPostsCheckbox" id="includeDirectedPostsCheckbox" value="0">Show mentions to unfollowed users in home stream</input></label><br>
+            </p>
+            <p>
+                <h1>Posting</h1>
+                <label><input type="checkbox" name="doNotIncludeUsernameReplyMyOwnPostCheckbox" id="doNotIncludeUsernameReplyMyOwnPostCheckbox" value="0">Do not include my @usename if replying to my own post</label><br>
             </p>
             <p>
                 <h1>Notifications</h1>

@@ -451,6 +451,11 @@
                 $(document).on("click", ".postReplyButton", function(){
                     irtPostId = $(this).parents(".post").attr("post_id");
                     var username = "@" + $(this).parents(".post").find(".username").text() + " ";
+                    if (store.get("doNotIncludeUsernameReplyMyOwnPost", false)) {
+                        if (myUsername == $(this).parents(".post").find(".username").text()) {
+                            username = "";
+                        }
+                    }
                     openComposeScreen(username);
                 });
 
