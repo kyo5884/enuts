@@ -191,8 +191,8 @@
                     tabSelect(4, username);
                 });
 
-                $("#windowContents").scroll(function() {
-                    var scrollTop = $("#windowContents").scrollTop();
+                $("#profile").scroll(function() {
+                    var scrollTop = $("#profile").scrollTop();
 
                     if (140 - scrollTop >= 40) {
                         $("#profileHeaderImage").height(140 - scrollTop);
@@ -1959,12 +1959,20 @@
                 bottom: 0;
                 left: 0;
                 right: 0;
-                overflow-y: scroll;
-                overflow-x: hidden;
+                overflow: hidden;
                 background-color: #fff;
                 z-index: 3;
 
                 transition: color 1s ease-in-out, background-color 1s ease-in-out;
+            }
+
+            .streams {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                overflow-y: scroll;
             }
 
             .theme-dark #windowContents {
@@ -2546,6 +2554,10 @@
                 z-index: 20;
             }
 
+            #search {
+                overflow: hidden;
+            }
+
             #searchInput {
                 width: 100%;
                 font-size: 11pt;
@@ -2559,7 +2571,6 @@
                 border: 0;
                 background-color: #eee;
                 border-bottom: 1px solid #ddd;
-                z-index: 50;
             }
 
             .theme-dark #searchInput {
@@ -2593,6 +2604,8 @@
                 bottom: 0;
                 left: 0;
                 right: 0;
+                overflow-y: scroll;
+                overflow-x: hidden;
             }
 
             #searchNoResults {
