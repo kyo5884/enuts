@@ -32,6 +32,22 @@
                 //init layout
                 $(window).resize(function(){
                     $("#innerComposeScreen").width(window.innerWidth - 72);
+
+                    if (process.platform == "darwin") {
+                        if (window.innerWidth > 290) {
+                            $("#titlebar-center .titlebar-button").velocity({width: 24}, {queue: false});
+                            $("#titlebar-center").velocity({paddingLeft: 0}, {queue: false});
+                        } else {
+                            $("#titlebar-center .titlebar-button").velocity({width: 20}, {queue: false});
+                            $("#titlebar-center").velocity({paddingLeft: 24}, {queue: false});
+                        }
+                    } else {
+                        if (window.innerWidth > 320) {
+                            $("#titlebar-center .titlebar-button").velocity({width: 24}, {queue: false});
+                        } else {
+                            $("#titlebar-center .titlebar-button").velocity({width: 20}, {queue: false});
+                        }
+                    }
                 });
 
                 $(window).resize();
