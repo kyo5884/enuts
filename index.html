@@ -1653,10 +1653,11 @@
             }
 
             $(document).on("click", "span[itemprop=tag]", function() {
-                search($(this).text(), "tag");
+                search($(this).text(), "tag", "id");
+                $("#searchButton").velocity("fadeOut");
+                $("#searchClearButton").velocity("fadeIn");
+                $('select[name="searchTypeSelect"]').val("tag");
                 $("#searchInput").val($(this).text().substr(1));
-                $("#searchButton").hide();
-                $("#searchClearButton").show();
                 tabSelect(5);
             });
 
