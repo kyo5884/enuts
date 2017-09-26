@@ -183,10 +183,14 @@
                 }, 10000);
 
                 function updateRelativeDate() {
-                    for (var i = 0; $(".post").length > i; i++) {
-                        var relTime = getRelativeDate($(".post:eq(" + i + ")").attr("post_created_at"));
-                        $(".post:eq(" + i + ") .postRelDateText").text(relTime);
-                    }
+                    // for (var i = 0; $(".post").length > i; i++) {
+                    //     var relTime = getRelativeDate($(".post:eq(" + i + ")").attr("post_created_at"));
+                    //     $(".post:eq(" + i + ") .postRelDateText").text(relTime);
+                    // }
+                    $(".post").each(function() {
+                        var relTime = getRelativeDate($(this).attr("post_created_at"));
+                        $(this).find(".postRelDateText").text(relTime);
+                    });
                 }
 
                 $("#titlebar-center .titlebar-button").click(function(){
