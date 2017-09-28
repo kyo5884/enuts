@@ -187,7 +187,8 @@
                     //     var relTime = getRelativeDate($(".post:eq(" + i + ")").attr("post_created_at"));
                     //     $(".post:eq(" + i + ") .postRelDateText").text(relTime);
                     // }
-                    $(".post").each(function() {
+
+                    $(".streams .post").each(function() {
                         var relTime = getRelativeDate($(this).attr("post_created_at"));
                         $(this).find(".postRelDateText").text(relTime);
                     });
@@ -337,7 +338,14 @@
                                 for (var i in result.data) {
                                     if (!result.data[i].is_deleted) {
                                         var postDate = new Date(result.data[i].created_at).toLocaleString();
-                                        var postRelativeDate = getRelativeDate(postDate);
+                                        var postRelativeDate = getRelativeDate(postDate, true);
+
+                                        if (postRelativeDate == "now") {
+                                            postRelativeDate = ' (<span class="postRelDateText">' + postRelativeDate + '</span>)';
+                                        } else {
+                                            postRelativeDate = ' (<span class="postRelDateText">' + postRelativeDate + '</span> ago)';
+                                        }
+
                                         var postImage = "";
 
                                         var deleteButton, postclass ="";
@@ -389,7 +397,7 @@
                                                     '<span class="username">' + result.data[i].user.username + '</span>' +
                                                 '</div>' +
                                                 '<div class="postdate">' +
-                                                    '<span class="postDateText">' + postDate + ' (<span class="postRelDateText">' + postRelativeDate + '</span> ago)</span>' +
+                                                    '<span class="postDateText">' + postDate + postRelativeDate + '</span>' +
                                                     '<div class="postcontrol">' +
                                                         '<span class="fa fa-reply fa-fw postReplyButton"></span>' +
                                                         '<span class="fa fa-star fa-fw postStarButton"></span>' +
@@ -1841,7 +1849,11 @@
                 }, 500);
             }
 
-            function getRelativeDate(targetDateStr){
+            function getRelativeDate(targetDateStr, force){
+                if (force == null) {
+                    force = false;
+                }
+
                 var baseDate = new Date();
                 var targetDate = new Date(targetDateStr);
 
@@ -1850,7 +1862,7 @@
                 var message = null;
 
 
-                if (store.get("absoluteDate", false) == false) {
+                if (store.get("absoluteDate", false) == false || force == true) {
 
                     if (elapsedTime < 60) {
                         message =  'now';
@@ -1865,19 +1877,21 @@
                     }
 
                 } else {
-                    var h, m, d, mo;
-                    d = targetDate.getDate();
-                    mo = targetDate.getMonth();
-                    h = targetDate.getHours();
-                    m = targetDate.getMinutes();
+                    // var h, m, d, mo;
+                    // d = targetDate.getDate();
+                    // mo = targetDate.getMonth();
+                    // h = targetDate.getHours();
+                    // m = targetDate.getMinutes();
 
-                    if (h < 10) {
-                        h = '0' + h;
-                    }
-                    if (m < 10) {
-                        m = '0' + m;
-                    }
-                    message = mo + "/" + d + " " + h + ":" + m;
+                    // if (h < 10) {
+                    //     h = '0' + h;
+                    // }
+                    // if (m < 10) {
+                    //     m = '0' + m;
+                    // }
+                    // message = mo + "/" + d + " " + h + ":" + m;
+
+                    message = targetDate.toLocaleString();
                 }
 
                 return message;
