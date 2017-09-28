@@ -334,6 +334,7 @@
                         type: "GET",
                         headers: { Authorization: "Bearer " + token },
                         data: {
+                            count: 200,
                             include_post_raw: 1,
                             include_bookmarked_by: 1,
                             include_reposted_by: 1,
@@ -348,14 +349,10 @@
                                         var postDate = new Date(result.data[i].created_at).toLocaleString();
                                         var postRelativeDate = getRelativeDate(postDate, true);
                                         var displayname = "";
+                                        var postDetailData = "";
                                         var postBookmarkedBy = "";
                                         var postRepostedBy = "";
-
-                                        if (postRelativeDate == "now") {
-                                            postRelativeDate = ' (<span class="postRelDateText">' + postRelativeDate + '</span>)';
-                                        } else {
-                                            postRelativeDate = ' (<span class="postRelDateText">' + postRelativeDate + '</span> ago)';
-                                        }
+                                        var postMiniDate = "";
 
                                         var postImage = "";
 
@@ -401,51 +398,73 @@
                                         }
 
                                         if (result.data[i].id != id) {
+
                                             postclass = postclass + " postthread-mentions";
-                                        }
+                                            postMiniDate = '<span class="postDateText"><span class="postRelDateText">' + postRelativeDate + '</span></span>';
 
-                                        if (result.data[i].bookmarked_by.length) {
-                                            var postBookmarkedByList = "";
+                                        } else {
 
-                                            for (var j in result.data[i].bookmarked_by) {
-                                                if (result.data[i].bookmarked_by[j].name == undefined) {
-                                                    result.data[i].bookmarked_by[j].name = "";
-                                                }
-
-                                                postBookmarkedByList += 
-                                                    '<div class="post">' +
-                                                        '<img class="usericon" src="' + result.data[i].bookmarked_by[j].content.avatar_image.link + '"> ' +
-                                                        '<span class="username">' + result.data[i].bookmarked_by[j].username + '</span> ' + '<span class="displayname">' + result.data[i].bookmarked_by[j].name + '</span><br>' +
-                                                    '</div>'
+                                            if (postRelativeDate == "now") {
+                                                postRelativeDate = ' (<span class="postRelDateText">' + postRelativeDate + '</span>)';
+                                            } else {
+                                                postRelativeDate = ' (<span class="postRelDateText">' + postRelativeDate + '</span> ago)';
                                             }
-                                            
-                                            postBookmarkedBy = '<div class="post-bookmarked-by">' +
-                                                'Bookmarked by <br>' + 
-                                                    postBookmarkedByList +
-                                                '</div>';
-                                        }
 
-                                        if (result.data[i].reposted_by.length) {
-                                            var postRepostedByList = "";
+                                            if (result.data[i].bookmarked_by.length) {
+                                                var postBookmarkedByList = "";
 
-                                            for (var j in result.data[i].reposted_by) {
-                                                if (result.data[i].reposted_by[j].name == undefined) {
-                                                    result.data[i].reposted_by[j].name = "";
+                                                for (var j in result.data[i].bookmarked_by) {
+                                                    if (result.data[i].bookmarked_by[j].name == undefined) {
+                                                        result.data[i].bookmarked_by[j].name = "";
+                                                    }
+
+                                                    postBookmarkedByList += 
+                                                        '<div class="post">' +
+                                                            '<img class="usericon" src="' + result.data[i].bookmarked_by[j].content.avatar_image.link + '"> ' +
+                                                            '<span class="username">' + result.data[i].bookmarked_by[j].username + '</span> ' + '<span class="displayname">' + result.data[i].bookmarked_by[j].name + '</span><br>' +
+                                                        '</div>'
                                                 }
-
-                                                postRepostedByList += 
-                                                    '<div class="post">' +
-                                                        '<img class="usericon" src="' + result.data[i].reposted_by[j].content.avatar_image.link + '"> ' +
-                                                        '<span class="username">' + result.data[i].reposted_by[j].username + '</span> ' + '<span class="displayname">' + result.data[i].reposted_by[j].name + '</span><br>' +
-                                                    '</div>'
+                                                
+                                                postBookmarkedBy = '<div class="post-bookmarked-by">' +
+                                                    'Bookmarked by <br>' + 
+                                                        postBookmarkedByList +
+                                                    '</div>';
                                             }
-                                            
-                                            postRepostedBy = '<div class="post-reposted-by">' +
-                                                'Reposted by <br>' + 
-                                                    postRepostedByList +
-                                                '</div>';
-                                        }
 
+                                            if (result.data[i].reposted_by.length) {
+                                                var postRepostedByList = "";
+
+                                                for (var j in result.data[i].reposted_by) {
+                                                    if (result.data[i].reposted_by[j].name == undefined) {
+                                                        result.data[i].reposted_by[j].name = "";
+                                                    }
+
+                                                    postRepostedByList += 
+                                                        '<div class="post">' +
+                                                            '<img class="usericon" src="' + result.data[i].reposted_by[j].content.avatar_image.link + '"> ' +
+                                                            '<span class="username">' + result.data[i].reposted_by[j].username + '</span> ' + '<span class="displayname">' + result.data[i].reposted_by[j].name + '</span><br>' +
+                                                        '</div>'
+                                                }
+                                                
+                                                postRepostedBy = '<div class="post-reposted-by">' +
+                                                    'Reposted by <br>' + 
+                                                        postRepostedByList +
+                                                    '</div>';
+                                            }
+
+                                            postDetailData = 
+                                                '<div class="postthread-postdatetext">' + postDate + postRelativeDate + '</div>' +
+                                                '<div class="postvia">' +
+                                                    'Posted via ' + '<a href="' + result.data[i].source.link + '">' + result.data[i].source.name + '</a>' +
+                                                '</div>' +
+                                                '<div class="postcounts">' +
+                                                    '<span class="fa fa-reply fa-fw"></span>' + result.data[i].counts.replies +
+                                                    ' <span class="fa fa-star fa-fw"></span>' + result.data[i].counts.bookmarks + '</span>' +
+                                                    ' <span class="fa fa-retweet fa-fw"></span>' + result.data[i].counts.reposts + '</span>' +
+                                                '</div>' +
+                                                '<div style="clear: both;"></div>';
+
+                                        }
                                         postDetailHtml = postDetailHtml + 
                                         '<div class="post ' + postclass + '" post_id=' + result.data[i].id + ' post_created_at="' + result.data[i].created_at + '">' +
                                             '<img class="usericon" src="' + result.data[i].user.content.avatar_image.link + '">' +
@@ -454,6 +473,7 @@
                                                     '<span class="username">' + result.data[i].user.username + '</span> ' + displayname + 
                                                 '</div>' +
                                                 '<div class="postdate">' +
+                                                    postMiniDate +
                                                     '<div class="postcontrol">' +
                                                         '<span class="fa fa-reply fa-fw postReplyButton"></span>' +
                                                         '<span class="fa fa-star fa-fw postStarButton"></span>' +
@@ -466,16 +486,7 @@
                                                     result.data[i].content.html +
                                                 '</div>' +
                                                 postImage +
-                                                '<div class="postthread-postdatetext">' + postDate + postRelativeDate + '</div>' +
-                                                '<div class="postvia">' +
-                                                    'Posted via ' + '<a href="' + result.data[i].source.link + '">' + result.data[i].source.name + '</a>' +
-                                                '</div>' +
-                                                '<div class="postcounts">' +
-                                                    '<span class="fa fa-reply fa-fw"></span>' + result.data[i].counts.replies +
-                                                    ' <span class="fa fa-star fa-fw"></span>' + result.data[i].counts.bookmarks + '</span>' +
-                                                    ' <span class="fa fa-retweet fa-fw"></span>' + result.data[i].counts.reposts + '</span>' +
-                                                '</div>' +
-                                                '<div style="clear: both;"></div>' +
+                                                postDetailData +
                                                 postBookmarkedBy +
                                                 postRepostedBy +
                                             '</div>' +
