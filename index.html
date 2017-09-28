@@ -1854,10 +1854,10 @@
                     force = false;
                 }
 
-                var baseDate = new Date();
+                var nowDate = new Date();
                 var targetDate = new Date(targetDateStr);
 
-                var elapsedTime = Math.ceil((baseDate.getTime() - targetDate.getTime())/1000);
+                var elapsedTime = Math.ceil((nowDate.getTime() - targetDate.getTime())/1000);
 
                 var message = null;
 
@@ -1877,21 +1877,11 @@
                     }
 
                 } else {
-                    // var h, m, d, mo;
-                    // d = targetDate.getDate();
-                    // mo = targetDate.getMonth();
-                    // h = targetDate.getHours();
-                    // m = targetDate.getMinutes();
-
-                    // if (h < 10) {
-                    //     h = '0' + h;
-                    // }
-                    // if (m < 10) {
-                    //     m = '0' + m;
-                    // }
-                    // message = mo + "/" + d + " " + h + ":" + m;
-
-                    message = targetDate.toLocaleString();
+                    if (nowDate.toLocaleDateString() == targetDate.toLocaleDateString()) {
+                        message = targetDate.toLocaleTimeString();
+                    } else {
+                        message = targetDate.toLocaleString();
+                    }
                 }
 
                 return message;
