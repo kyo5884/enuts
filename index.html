@@ -488,6 +488,18 @@
                                 myUsername = result.data.username;
                             }
                         });
+
+                        $.ajax({
+                            url: "https://api.pnut.io/v0/token",
+                            type: "GET",
+                            headers: { Authorization: "Bearer " + token },
+                            success: function(result) {
+                                if (result.data.storage.total == 0) {
+                                    $("#composeFileArea").hide();
+                                }
+                            }
+                        });
+
                     }
                     tabSelect(store.get("selectedTab", 0));
                 });
