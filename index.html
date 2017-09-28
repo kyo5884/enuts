@@ -145,6 +145,12 @@
                         $("#windowContents").removeClass("streams-rounded-icon");
                     }
 
+                    if (store.get("showDisplayName", true)) {
+                        $("#windowContents").addClass("streams-show-displayname");
+                    } else {
+                        $("#windowContents").removeClass("streams-show-displayname");
+                    }
+
                     $("body").removeClass("theme-dark");
                     $("body").removeClass("theme-cyber");
                     $("body").addClass("theme-" + store.get("theme", "light"));
@@ -339,6 +345,7 @@
                                     if (!result.data[i].is_deleted) {
                                         var postDate = new Date(result.data[i].created_at).toLocaleString();
                                         var postRelativeDate = getRelativeDate(postDate, true);
+                                        var displayname = "";
 
                                         if (postRelativeDate == "now") {
                                             postRelativeDate = ' (<span class="postRelDateText">' + postRelativeDate + '</span>)';
@@ -362,6 +369,10 @@
 
                                         if (result.data[i].you_reposted) {
                                             postclass = postclass + " post-reposted";
+                                        }
+                                        
+                                        if (result.data[i].user.name != undefined) {
+                                            displayname = '<span class="displayname">' + result.data[i].user.name + '</span>';
                                         }
 
                                         if ("raw" in result.data[i]) {
@@ -394,7 +405,7 @@
                                             '<img class="usericon" src="' + result.data[i].user.content.avatar_image.link + '">' +
                                             '<div class="postcontent">' +
                                                 '<div class="usernameArea">' +
-                                                    '<span class="username">' + result.data[i].user.username + '</span>' +
+                                                    '<span class="username">' + result.data[i].user.username + '</span> ' + displayname + repostInfo +
                                                 '</div>' +
                                                 '<div class="postdate">' +
                                                     '<span class="postDateText">' + postDate + postRelativeDate + '</span>' +
@@ -827,6 +838,7 @@
                                     var postRelativeDate = getRelativeDate(postDate);
                                     var postImage = "";
                                     var repostInfo = "";
+                                    var displayname = "";
 
                                     var deleteButton, postclass ="";
 
@@ -848,6 +860,10 @@
 
                                     if (result.data[i].you_reposted) {
                                         postclass = postclass + " post-reposted";
+                                    }
+
+                                    if (result.data[i].user.name != undefined) {
+                                        displayname = '<span class="displayname">' + result.data[i].user.name + '</span>';
                                     }
 
                                     if ("raw" in result.data[i]) {
@@ -887,7 +903,7 @@
                                             '<img class="usericon" src="' + result.data[i].user.content.avatar_image.link + '">' +
                                             '<div class="postcontent">' +
                                                 '<div class="usernameArea">' +
-                                                    '<span class="username">' + result.data[i].user.username + '</span>' + repostInfo +
+                                                    '<span class="username">' + result.data[i].user.username + '</span> ' + displayname + repostInfo +
                                                 '</div>' +
                                                 '<div class="postdate">' +
                                                     '<span class="postDateText"><span class="postRelDateText">' + postRelativeDate + '</span></span>' +
@@ -1069,6 +1085,7 @@
                                     var postRelativeDate = getRelativeDate(postDate);
                                     var postImage = "";
                                     var repostInfo = "";
+                                    var displayname = "";
 
                                     var deleteButton, postclass ="";
 
@@ -1090,6 +1107,10 @@
 
                                     if (result.data[i].you_reposted) {
                                         postclass = postclass + " post-reposted";
+                                    }
+
+                                    if (result.data[i].user.name != undefined) {
+                                        displayname = '<span class="displayname">' + result.data[i].user.name + '</span>';
                                     }
 
                                     if ("raw" in result.data[i]) {
@@ -1120,7 +1141,7 @@
                                             '<img class="usericon" src="' + result.data[i].user.content.avatar_image.link + '">' +
                                             '<div class="postcontent">' +
                                                 '<div class="usernameArea">' +
-                                                    '<span class="username">' + result.data[i].user.username + '</span>' + repostInfo +
+                                                    '<span class="username">' + result.data[i].user.username + '</span> ' + displayname + repostInfo +
                                                 '</div>' +
                                                 '<div class="postdate">' +
                                                     '<span class="postDateText"><span class="postRelDateText">' + postRelativeDate + '</span></span>' +
@@ -1166,6 +1187,7 @@
                                     var postRelativeDate = getRelativeDate(postDate);
                                     var postImage = "";
                                     var repostInfo = "";
+                                    var displayname = "";
 
                                     var deleteButton, postclass ="";
 
@@ -1187,6 +1209,10 @@
 
                                     if (result.data[i].you_reposted) {
                                         postclass = postclass + " post-reposted";
+                                    }
+
+                                    if (result.data[i].user.name != undefined) {
+                                        displayname = '<span class="displayname">' + result.data[i].user.name + '</span>';
                                     }
 
                                     if ("raw" in result.data[i]) {
@@ -1217,7 +1243,7 @@
                                             '<img class="usericon" src="' + result.data[i].user.content.avatar_image.link + '">' +
                                             '<div class="postcontent">' +
                                                 '<div class="usernameArea">' +
-                                                    '<span class="username">' + result.data[i].user.username + '</span>' + repostInfo +
+                                                    '<span class="username">' + result.data[i].user.username + '</span> ' + displayname + repostInfo +
                                                 '</div>' +
                                                 '<div class="postdate">' +
                                                     '<span class="postDateText"><span class="postRelDateText">' + postRelativeDate + '</span></span>' +
@@ -1280,7 +1306,7 @@
                                     '<img class="usericon" src="' + result.data[i].content.avatar_image.link + '">' +
                                     '<div class="postcontent">' +
                                         '<div class="usernameArea">' +
-                                            '<span class="username">' + result.data[i].username + '</span> ' + result.data[i].name + '<br>' +
+                                            '<span class="username">' + result.data[i].username + '</span> ' + '<span class="displayname">' + result.data[i].name + '</span><br>' +
                                         '</div>' +
                                         '<div class="postdate">' +
                                             '<span class="">' + followsYou + '</span>' +
@@ -1337,7 +1363,7 @@
                                     '<img class="usericon" src="' + result.data[i].content.avatar_image.link + '">' +
                                     '<div class="postcontent">' +
                                         '<div class="usernameArea">' +
-                                            '<span class="username">' + result.data[i].username + '</span> ' + result.data[i].name + '<br>' +
+                                            '<span class="username">' + result.data[i].username + '</span> ' + '<span class="displayname">' + result.data[i].name + '</span><br>' +
                                         '</div>' +
                                         '<div class="postdate">' +
                                             '<span class="">' + followsYou + '</span>' +
@@ -1646,7 +1672,7 @@
                                         '<img class="usericon" src="' + result.data[i].users[0].content.avatar_image.link + '">' +
                                         '<div class="postcontent">' +
                                             '<div class="usernameArea">' +
-                                                action + ' by <span class="username">' + result.data[i].users[0].username + "</span>" +
+                                                action + ' by <span class="username">' + result.data[i].users[0].username + "</span>" + 
                                             '</div>' +
                                             '<div class="postdate">' + 
                                                 '<span class="postRelDateText">' + postRelativeDate + '</span>' +
@@ -1720,6 +1746,7 @@
                                         var postRelativeDate = getRelativeDate(postDate);
                                         var postImage = "";
                                         var repostInfo = "";
+                                        var displayname = "";
 
                                         var deleteButton, postclass ="";
 
@@ -1741,6 +1768,10 @@
 
                                         if (result.data[i].you_reposted) {
                                             postclass = postclass + " post-reposted";
+                                        }
+                                        
+                                        if (result.data[i].user.name != undefined) {
+                                            displayname = '<span class="displayname">' + result.data[i].user.name + '</span>';
                                         }
 
                                         if ("raw" in result.data[i]) {
@@ -1771,7 +1802,7 @@
                                                 '<img class="usericon" src="' + result.data[i].user.content.avatar_image.link + '">' +
                                                 '<div class="postcontent">' +
                                                     '<div class="usernameArea">' +
-                                                        '<span class="username">' + result.data[i].user.username + '</span>' + repostInfo +
+                                                        '<span class="username">' + result.data[i].user.username + '</span> ' + displayname + repostInfo +
                                                     '</div>' +
                                                     '<div class="postdate">' +
                                                         '<span class="postDateText"><span class="postRelDateText">' + postRelativeDate + '</span></span>' +
@@ -2187,6 +2218,21 @@
                 float: right;
                 color: #999;
                 font-size: 9pt;
+            }
+
+            .displayname {
+                display: none;
+
+                color: #999;
+                font-size: 9pt;
+            }
+
+            .streams-show-displayname .displayname {
+                display: inline;
+            }
+
+            #profileFollowers .displayname, #profileFollowing .displayname {
+                display: inline;
             }
 
             .theme-cyber .postdate, .theme-cyber .postvia, .theme-cyber .postcounts {

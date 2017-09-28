@@ -69,6 +69,12 @@
                 store.set("roundedIcon", $("input[name='roundedIconCheckbox']").prop("checked"));
             });
 
+
+            $("input[name='showDisplayNameCheckbox']").prop("checked", store.get("showDisplayName", true));
+            $("#showDisplayNameCheckbox").click(function() {
+                store.set("showDisplayName", $("input[name='showDisplayNameCheckbox']").prop("checked"));
+            });
+
             // $("input[name='doNotIncludeUsernameReplyMyOwnPostCheckbox']").prop("checked", store.get("doNotIncludeUsernameReplyMyOwnPost", false));
             // $("input[name='doNotIncludeUsernameReplyMyOwnPostCheckbox']").click(function() {
             //     store.set("doNotIncludeUsernameReplyMyOwnPost", $("input[name='doNotIncludeUsernameReplyMyOwnPostCheckbox']").prop("checked"));
@@ -138,6 +144,7 @@
             <p>
                 <h1>Stream</h1>
                 <label><input type="checkbox" name="roundedIconCheckbox" id="roundedIconCheckbox" value="1"></input>Rounded Usericons</label><br>
+                <label><input type="checkbox" name="showDisplayNameCheckbox" id="showDisplayNameCheckbox" value="1"></input>Show user's name</label><br>
                 <label><input type="checkbox" name="absoluteDateCheckbox" id="absoluteDateCheckbox" value="0"></input>Use absolute date instead of relative date</label><br>
                 <label><input type="checkbox" name="includeDirectedPostsCheckbox" id="includeDirectedPostsCheckbox" value="0">Show mentions to unfollowed users in home stream</input></label><br>
             </p>
