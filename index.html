@@ -408,7 +408,6 @@
                                                     '<span class="username">' + result.data[i].user.username + '</span> ' + displayname + 
                                                 '</div>' +
                                                 '<div class="postdate">' +
-                                                    '<span class="postDateText">' + postDate + postRelativeDate + '</span>' +
                                                     '<div class="postcontrol">' +
                                                         '<span class="fa fa-reply fa-fw postReplyButton"></span>' +
                                                         '<span class="fa fa-star fa-fw postStarButton"></span>' +
@@ -421,6 +420,7 @@
                                                     result.data[i].content.html +
                                                 '</div>' +
                                                 postImage +
+                                                '<div class="postthread-postdatetext">' + postDate + postRelativeDate + '</div>' +
                                                 '<div class="postvia">' +
                                                     'Posted via ' + '<a href="' + result.data[i].source.link + '">' + result.data[i].source.name + '</a>' +
                                                 '</div>' +
@@ -2251,7 +2251,7 @@
                 display: inline;
             }
 
-            .theme-cyber .postdate, .theme-cyber .postvia, .theme-cyber .postcounts {
+            .theme-cyber .postdate, .theme-cyber .postvia, .theme-cyber .postcounts, .theme-cyber .postthread-postdatetext {
                 color: #5ff;
                 text-shadow: 0 0 10px #4ee;
             }
@@ -2259,14 +2259,21 @@
                 color: #fff;
             }
 
+
+            .postthread-postdatetext {
+                color: #999;
+                font-size: 9pt;
+                margin-top: 5px;
+            }
+
             .postcounts {
                 float: left;
                 text-align: left;
-                margin-top: 8px;
+                margin-top: 3px;
             }
 
             .postvia {
-                margin-top: 8px;
+                margin-top: 3px;
             }
 
             .postcontrol {
