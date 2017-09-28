@@ -205,7 +205,7 @@
                 });
 
                 $(document).on("click", ".usericon, .username, #profileFollowing .postcontent, #profileFollowers .postcontent", function() {
-                    var username = "@" + $(this).parents(".post").find(".username").text();
+                    var username = "@" + $(this).closest(".post").find(".username").text();
                     tabSelect(4, username);
                 });
                 
@@ -334,7 +334,9 @@
                         type: "GET",
                         headers: { Authorization: "Bearer " + token },
                         data: {
-                            include_post_raw: 1
+                            include_post_raw: 1,
+                            include_bookmarked_by: 1,
+                            include_reposted_by: 1,
                         },
                         success: function(result) {
                             console.log(result);
@@ -346,6 +348,8 @@
                                         var postDate = new Date(result.data[i].created_at).toLocaleString();
                                         var postRelativeDate = getRelativeDate(postDate, true);
                                         var displayname = "";
+                                        var postBookmarkedBy = "";
+                                        var postRepostedBy = "";
 
                                         if (postRelativeDate == "now") {
                                             postRelativeDate = ' (<span class="postRelDateText">' + postRelativeDate + '</span>)';
@@ -400,6 +404,48 @@
                                             postclass = postclass + " postthread-mentions";
                                         }
 
+                                        if (result.data[i].bookmarked_by.length) {
+                                            var postBookmarkedByList = "";
+
+                                            for (var j in result.data[i].bookmarked_by) {
+                                                if (result.data[i].bookmarked_by[j].name == undefined) {
+                                                    result.data[i].bookmarked_by[j].name = "";
+                                                }
+
+                                                postBookmarkedByList += 
+                                                    '<div class="post">' +
+                                                        '<img class="usericon" src="' + result.data[i].bookmarked_by[j].content.avatar_image.link + '"> ' +
+                                                        '<span class="username">' + result.data[i].bookmarked_by[j].username + '</span> ' + '<span class="displayname">' + result.data[i].bookmarked_by[j].name + '</span><br>' +
+                                                    '</div>'
+                                            }
+                                            
+                                            postBookmarkedBy = '<div class="post-bookmarked-by">' +
+                                                'Bookmarked by: <br>' + 
+                                                    postBookmarkedByList +
+                                                '</div>';
+                                        }
+
+                                        if (result.data[i].reposted_by.length) {
+                                            var postRepostedByList = "";
+
+                                            for (var j in result.data[i].reposted_by) {
+                                                if (result.data[i].reposted_by[j].name == undefined) {
+                                                    result.data[i].reposted_by[j].name = "";
+                                                }
+
+                                                postRepostedByList += 
+                                                    '<div class="post">' +
+                                                        '<img class="usericon" src="' + result.data[i].reposted_by[j].content.avatar_image.link + '"> ' +
+                                                        '<span class="username">' + result.data[i].reposted_by[j].username + '</span> ' + '<span class="displayname">' + result.data[i].reposted_by[j].name + '</span><br>' +
+                                                    '</div>'
+                                            }
+                                            
+                                            postRepostedBy = '<div class="post-reposted-by">' +
+                                                'Reposted by: <br>' + 
+                                                    postRepostedByList +
+                                                '</div>';
+                                        }
+
                                         postDetailHtml = postDetailHtml + 
                                         '<div class="post ' + postclass + '" post_id=' + result.data[i].id + ' post_created_at="' + result.data[i].created_at + '">' +
                                             '<img class="usericon" src="' + result.data[i].user.content.avatar_image.link + '">' +
@@ -426,12 +472,14 @@
                                                 '</div>' +
                                                 '<div class="postcounts">' +
                                                     '<span class="fa fa-reply fa-fw"></span>' + result.data[i].counts.replies +
-                                                    ' <span class="fa fa-star fa-fw"></span>' + result.data[i].counts.bookmarks +
-                                                    ' <span class="fa fa-retweet fa-fw"></span>' + result.data[i].counts.reposts +
+                                                    ' <span class="fa fa-star fa-fw"></span>' + result.data[i].counts.bookmarks + '</span>' +
+                                                    ' <span class="fa fa-retweet fa-fw"></span>' + result.data[i].counts.reposts + '</span>' +
                                                 '</div>' +
                                                 '<div style="clear: both;"></div>' +
+                                                postBookmarkedBy +
+                                                postRepostedBy +
                                             '</div>' +
-                                        '</div>'
+                                        '</div>';
                                     }
                                 }
                                 
@@ -2307,7 +2355,9 @@
                 height: auto;
             }
 
-            .post-interaction .posttext {
+            .post-interaction .posttext,
+            .post-bookmarked-by,
+            .post-reposted-by {
                 border: 1px solid #ccc;
                 border-radius: 2px;
                 background-color: #eee;
@@ -2315,12 +2365,16 @@
                 cursor: pointer;
             }
 
-            .theme-dark .post-interaction .posttext {
+            .theme-dark .post-interaction .posttext,
+            .theme-dark .post-bookmarked-by,
+            .theme-dark .post-reposted-by {
                 background-color: #333;
                 border: 1px solid #222;
             }
 
-            .theme-cyber .post-interaction .posttext {
+            .theme-cyber .post-interaction .posttext,
+            .theme-cyber .post-bookmarked-by,
+            .theme-cyber .post-reposted-by {
                 background-color: #457;
                 border: 1px solid #346;
             }
@@ -2353,6 +2407,25 @@
 
             .postthread-mentions .posttext {
                 font-size: 9pt;
+            }
+
+            .post-bookmarked-by,
+            .post-reposted-by {
+                margin-top: 4px;
+            }
+            .post-bookmarked-by .post,
+            .post-reposted-by .post {
+                min-height: 20px;
+                border-bottom: 0;
+                padding: 0;
+                margin: 0;
+                margin-top: 8px;
+            }
+            .post-bookmarked-by .usericon,
+            .post-reposted-by .usericon {
+                width: 20px;
+                height: 20px;
+                vertical-align: middle;
             }
 
             .postthread-titlebar {
