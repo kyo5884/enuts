@@ -403,7 +403,9 @@ ipcMain.on("winMaximize", () => {
 });
 ipcMain.on("winMinimize", () => {
   mainWindow.minimize();
-  mainWindow.hide();
+  if (process.platform != "darwin" && store.get("minimizeToTaskTray", false)) {
+    mainWindow.hide();
+  }
 });
 ipcMain.on("winRestore", () => {
   mainWindow.show();
