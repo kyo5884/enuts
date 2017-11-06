@@ -1110,7 +1110,9 @@
                             $("#profileFollowButton").html('<span class="fa fa-check-circle"></span> This is you!');
                             $("#profileBlockButton").hide();
                             $("#profileMuteButton").hide();
+                            $("#profileEditButton").show();
                         } else {
+                            $("#profileEditButton").hide();
                             if (result.data.you_follow) {
                                 $("#profile").addClass("profile-you-follow");
                                 $("#profileFollowButton").html('<span class="fa fa-check-circle"></span> Following');
@@ -2932,6 +2934,7 @@
                         <div id="profileOptionMenu">
                             <button class="profile-action-button" id="profileBlockButton"><span class="fa fa-ban"></span> Block</button>
                             <button class="profile-action-button" id="profileMuteButton"><span class="fa fa-eye-slash"></span> Mute</button>
+                            <button class="profile-action-button" id="profileEditButton"><span class="fa fa-pencil"></span> Edit Profile</button>
                             <button class="profile-action-button" id="profileOpenWebButton"><span class="fa fa-globe"></span> Open in pnut.io</button>
                             <button id="profileOptionCloseButton"><span class="fa fa-close"></span></button>
                             <div style="clear: both;"></div>
