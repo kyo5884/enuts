@@ -569,6 +569,16 @@
                 $(document).on("click", ".postReplyButton", function(e) {
                     irtPostId = $(this).parents(".post").attr("post_id");
                     var username = "@" + $(this).parents(".post").find(".username").text() + " ";
+
+                    if ($(this).parents(".postcontent").find("span[itemprop=mention]").length > 1) {
+                        for (var i = 0; i < $(this).parents(".postcontent").find("span[itemprop=mention]").length; i++) {
+                            var targetUsername = $(this).parents(".postcontent").find("span[itemprop=mention]:eq(" + i +")").attr("data-mention-name");
+                            if (myUsername != targetUsername) {
+                                username += "@" + targetUsername + " ";
+                            }
+                        }
+                    }
+
                     if (e.shiftKey) {
                         username = "";
                     }
