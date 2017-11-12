@@ -20,7 +20,12 @@
             var token;
             var myUserId, myUsername;
             var selectedTab = 0;
-            var latestStreamPostId, latestGlobalPostId, latestMentionsPostId, latestInteractionsId = 0;
+
+            var latestStreamPostId = 0;
+            var latestGlobalPostId = 0;
+            var latestMentionsPostId = 0;
+            var latestInteractionsId = 0;
+
             var irtPostId;
 
             var uploadFile = null;
@@ -890,7 +895,7 @@
                     type: "GET",
                     headers : { Authorization: "Bearer " + token },
                     data: {
-                        since_id: latestId,
+                        //since_id: latestId,
                         count: 200,
                         include_directed_posts: includeDirectedPosts,
                         include_copy_mentions: 1,
@@ -903,18 +908,20 @@
 
                             switch (type) {
                                 case "stream":
-                                    latestStreamPostId = result.data[0].id;
+                                    latestStreamPostId = parseInt(result.data[0].id);
                                     break;
                                 case "global":
-                                    latestGlobalPostId = result.data[0].id;
+                                    latestGlobalPostId = parseInt(result.data[0].id);
                                     break;
                                 case "mentions":
-                                    latestMentionsPostId = result.data[0].id;
+                                    latestMentionsPostId = parseInt(result.data[0].id);
                                     break;
                             }
 
                             for (var i in result.data) {
-                                if (!result.data[i].is_deleted) {
+                                if (result.data[i].is_deleted) {
+                                    $(".post[post_id=" + result.data[i].id + "]").velocity("slideUp");
+                                } else if (result.data[i].id > latestId) {
                                     var postDate = new Date(result.data[i].created_at).toLocaleString();
                                     var postRelativeDate = getRelativeDate(postDate);
                                     var postImage = "";
