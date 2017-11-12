@@ -980,7 +980,7 @@
                                     $(".post-latest").removeClass("post-latest");
 
                                     prependHTML = prependHTML +
-                                        '<div class="post post-latest' + postclass + '" post_id=' + result.data[i].id + ' post_created_at="' + result.data[i].created_at + '" style="display: none;">' +
+                                        '<div class="post post-latest' + postclass + '" post_id=' + result.data[i].id + ' post_created_at="' + result.data[i].created_at + '">' +
                                             '<img class="usericon" src="' + result.data[i].user.content.avatar_image.link + '">' +
                                             '<div class="postcontent">' +
                                                 '<div class="usernameArea">' +
@@ -1027,7 +1027,14 @@
 
                             $("#streamSpinner").velocity("fadeOut", {duration: 300});
 
-                            $(".post-latest").velocity("slideDown", {duration: 300, delay: 300});
+                            if ($("#" + type).scrollTop() > 5) {
+                                $("#" + type).scrollTop(
+                                    $("#" + type).scrollTop() + $("#" + type + " .post-latest").outerHeight()
+                                );
+                            } else {
+                                $("#" + type).scrollTop($("#" + type + " .post-latest").outerHeight());
+                                $("#" + type).animate({scrollTop: 0});
+                            }
 
                             //$("#" + type + " .post:gt(200)").remove();
                         }
