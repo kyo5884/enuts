@@ -1023,24 +1023,13 @@
                                 }
                             }
 
-                            switch (type) {
-                                case "stream":
-                                    $("#stream").prepend(prependHTML);
-                                    break;
-                                case "global":
-                                    $("#global").prepend(prependHTML);
-                                    break;
-                                case "mentions":
-                                    $("#mentions").prepend(prependHTML);
-                                    break;
-                            }
-                            
+                            $("#" + type).prepend(prependHTML);                            
 
                             $("#streamSpinner").velocity("fadeOut", {duration: 300});
 
                             $(".post-latest").velocity("slideDown", {duration: 300, delay: 300});
 
-                            $("#" + type + " .post:gt(200)").remove();
+                            //$("#" + type + " .post:gt(200)").remove();
                         }
                         
                     }
