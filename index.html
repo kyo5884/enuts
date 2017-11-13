@@ -2070,6 +2070,24 @@
                 width: 24px;
             }
 
+            .titlebar-button.unread-indicator:after {
+                content: "";
+                /*
+                text-align: center;
+                font-size: 10px;
+                font-family: sans-serif;
+                font-weight: bold; */
+                background-color: #3ad;
+                color: #fff;
+                height: 8px;
+                width: 8px;
+                /* padding: 2px; */
+                border-radius: 8px;
+                position: absolute;
+                bottom: 0px;
+                right: 0px;
+            }
+
             #titlebar-edge {
                 position: absolute;
                 top: 10px;
@@ -2080,6 +2098,7 @@
                 cursor: pointer;
                 font-size: 20px;
                 text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+                position: relative;
             }
 
             .titlebar-button:active {
