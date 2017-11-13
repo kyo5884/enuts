@@ -984,7 +984,7 @@
                                         }
                                     }
 
-                                    $(".post-latest").removeClass("post-latest");
+                                    // $(".post-latest").removeClass("post-latest");
 
                                     prependHTML = prependHTML +
                                         '<div class="post post-latest' + postclass + '" post_id=' + result.data[i].id + ' post_created_at="' + result.data[i].created_at + '">' +
@@ -1034,14 +1034,18 @@
 
                             $("#streamSpinner").velocity("fadeOut", {duration: 300});
 
-                            if ($("#" + type).scrollTop() > 5) {
-                                $("#" + type).scrollTop(
-                                    $("#" + type).scrollTop() + $("#" + type + " .post-latest").outerHeight()
-                                );
+                            var scrPos = $("#" + type).scrollTop();
+                            console.log(type, scrPos, scrPos + $("#" + type + " .post-latest").outerHeight());
+                            if (scrPos > 0) {
+                                if ($("#" + type + " .post-latest").length) {
+                                    $("#" + type).scrollTop(scrPos + $("#" + type + " .post-latest").outerHeight());
+                                }
                             } else {
                                 $("#" + type).scrollTop($("#" + type + " .post-latest").outerHeight());
                                 $("#" + type).animate({scrollTop: 0});
                             }
+
+                            $("#" + type + " .post-latest").removeClass("post-latest");
 
                             //$("#" + type + " .post:gt(200)").remove();
                         }
