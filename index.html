@@ -676,12 +676,14 @@
 
 
             function openComposeScreen(text) {
-                if ($("#composeScreen").css("display") == "none") {
-                    $("#composeScreen").velocity("slideDown", {duration: 300});
+                if ($("#composeScreen").css("display") == "none" || text !== undefined) {
+                    if ($("#composeScreen").css("display") == "none") {
+                        $("#composeScreen").velocity("slideDown", {duration: 300});
+                    }
                     $("#composeTextArea").val(text);
                     setTimeout(function(){
                         $("#composeTextArea").focus();
-                    }, 0);
+                    }, 320);
                     $("#composeButton").css("color", "#fff");
                     if ($(".postthread").length) {
                         $(".postthread").velocity({marginTop: $("#composeScreen").outerHeight() + "px"});
