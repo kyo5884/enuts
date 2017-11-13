@@ -1035,7 +1035,6 @@
                             $("#streamSpinner").velocity("fadeOut", {duration: 300});
 
                             var scrPos = $("#" + type).scrollTop();
-                            console.log(type, scrPos, scrPos + $("#" + type + " .post-latest").outerHeight());
                             if (scrPos > 0) {
                                 if ($("#" + type + " .post-latest").length) {
                                     $("#" + type).scrollTop(scrPos + $("#" + type + " .post-latest").outerHeight());
@@ -1773,7 +1772,18 @@
                             }
 
                             $("#interactions").prepend(prependHTML);
-                            $(".post-latest").velocity("slideDown", {duration: 300, delay: 300});
+
+                            var scrPos = $("#interactions").scrollTop();
+                            if (scrPos > 0) {
+                                if ($("#interactions .post-latest").length) {
+                                    $("#interactions").scrollTop(scrPos + $("#interactions .post-latest").outerHeight());
+                                }
+                            } else {
+                                $("#interactions").scrollTop($("#interactions .post-latest").outerHeight());
+                                $("#interactions").animate({scrollTop: 0});
+                            }
+
+                            $("#interactions .post-latest").removeClass("post-latest");
 
                         }
                     }
