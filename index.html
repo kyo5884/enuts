@@ -332,6 +332,12 @@
                 $(document).on("click", ".postDetailButton", function() {
                     getConversations($(this).parents(".post").attr("post_id"));
                 });
+                
+                $(".streams").scroll(function() {
+                    if (this.scrollTop == 0) {
+                        $("#" + this.id + "Button").removeClass("unread-indicator");
+                    }
+                });
 
                 function getConversations(id) {
                     $.ajax({
@@ -1037,9 +1043,10 @@
                             $("#streamSpinner").velocity("fadeOut", {duration: 300});
 
                             var scrPos = $("#" + type).scrollTop();
-                            if (scrPos > 0) {
-                                if ($("#" + type + " .post-latest").length) {
+                            if (scrPos > 0 || $("#" + type).css("display") == "none") {
+                                if ($("#" + type + " .post-latest").length && latestId != 0) {
                                     $("#" + type).scrollTop(scrPos + $("#" + type + " .post-latest").outerHeight());
+                                    $("#" + type + "Button").addClass("unread-indicator");
                                 }
                             } else {
                                 $("#" + type).scrollTop($("#" + type + " .post-latest").outerHeight());
@@ -1637,15 +1644,27 @@
                     switch (tabId) {
                         case 0:
                             $("#stream").velocity("fadeIn", {duration: 250});
+                            if ($("#stream").scrollTop() == 0) {
+                                $("#streamButton").removeClass("unread-indicator");
+                            }
                             break;
                         case 1:
                             $("#mentions").velocity("fadeIn", {duration: 250});
+                            if ($("#mentions").scrollTop() == 0) {
+                                $("#mentionsButton").removeClass("unread-indicator");
+                            }
                             break;
                         case 2:
                             $("#interactions").velocity("fadeIn", {duration: 250});
+                            if ($("#interactions").scrollTop() == 0) {
+                                $("#interactionsButton").removeClass("unread-indicator");
+                            }
                             break;
                         case 3:
                             $("#global").velocity("fadeIn", {duration: 250});
+                            if ($("#global").scrollTop() == 0) {
+                                $("#globalButton").removeClass("unread-indicator");
+                            }
                             break;
                         case 5:
                             $("#search").velocity("fadeIn", {duration: 250});
@@ -1702,8 +1721,6 @@
                         
                         if (result.data.length) {
 
-                            latestInteractionsId = result.data[0].pagination_id;
-
                             for (var i in result.data) {
                                 var postDate = new Date(result.data[i].event_date).toLocaleString();
                                 var postRelativeDate = getRelativeDate(postDate);
@@ -1720,7 +1737,7 @@
                                             content = '<div class="posttext" style="font-style: italic;">This post was deleted.</div>';
                                         } else {
                                             content = '<div class="posttext">' + result.data[i].objects[0].content.html + '</div>';
-                                            if (store.get("notifyInteractions", true) && result.data.length < 10) {
+                                            if (store.get("notifyInteractions", true) && latestInteractionsId != 0) {
                                                 notify("Bookmarked by @" + result.data[i].users[0].username, result.data[i].objects[0].content.text, function() {
                                                     tabSelect(2);
                                                 });
@@ -1736,7 +1753,7 @@
                                             content = '<div class="posttext" style="font-style: italic;">This post was deleted.</div>';
                                         } else {
                                             content = '<div class="posttext">' + result.data[i].objects[0].content.html + '</div>';
-                                            if (store.get("notifyInteractions", true) && result.data.length < 10) {
+                                            if (store.get("notifyInteractions", true) && latestInteractionsId != 0) {
                                                 notify("Reposted by @" + result.data[i].users[0].username, result.data[i].objects[0].content.text, function() {
                                                     tabSelect(2);
                                                 }); 
@@ -1748,7 +1765,7 @@
                                         action = '<span class="fa fa-user-plus"></span> Followed'
                                         content = "";
                                         
-                                        if (store.get("notifyInteractions", true) && result.data.length < 10) {
+                                        if (store.get("notifyInteractions", true) && latestInteractionsId != 0) {
                                             notify("Followed by @" + result.data[i].users[0].username, "", function() {
                                                 tabSelect(2);
                                             });
@@ -1776,9 +1793,10 @@
                             $("#interactions").prepend(prependHTML);
 
                             var scrPos = $("#interactions").scrollTop();
-                            if (scrPos > 0) {
-                                if ($("#interactions .post-latest").length) {
+                            if (scrPos > 0 || $("#interactions").css("display") == "none") {
+                                if ($("#interactions .post-latest").length && latestInteractionsId != 0) {
                                     $("#interactions").scrollTop(scrPos + $("#interactions .post-latest").outerHeight());
+                                    $("#interactionsButton").addClass("unread-indicator");
                                 }
                             } else {
                                 $("#interactions").scrollTop($("#interactions .post-latest").outerHeight());
@@ -1786,6 +1804,7 @@
                             }
 
                             $("#interactions .post-latest").removeClass("post-latest");
+                            latestInteractionsId = result.data[0].pagination_id;
 
                         }
                     }
@@ -2084,7 +2103,7 @@
                 /* padding: 2px; */
                 border-radius: 8px;
                 position: absolute;
-                bottom: 0px;
+                top: 0px;
                 right: 0px;
             }
 
