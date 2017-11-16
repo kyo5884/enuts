@@ -62,6 +62,30 @@
                 store.set("notifyGlobal", $("input[name='notifyGlobalCheckbox']").prop("checked"));
             });
 
+
+
+            $("input[name='streamUnreadIndicatorCheckbox']").prop("checked", store.get("streamUnreadIndicator", true));
+            $("#streamUnreadIndicatorCheckbox").click(function() {
+                store.set("streamUnreadIndicator", $("input[name='streamUnreadIndicator']").prop("checked"));
+            });
+
+            $("input[name='mentionsUnreadIndicatorCheckbox']").prop("checked", store.get("mentionsUnreadIndicator", true));
+            $("#mentionsUnreadIndicatorCheckbox").click(function() {
+                store.set("mentionsUnreadIndicator", $("input[name='mentionsUnreadIndicator']").prop("checked"));
+            });
+            
+            $("input[name='interactionsUnreadIndicatorCheckbox']").prop("checked", store.get("interactionsUnreadIndicator", true));
+            $("#interactionsUnreadIndicatorCheckbox").click(function() {
+                store.set("interactionsUnreadIndicator", $("input[name='interactionsUnreadIndicator']").prop("checked"));
+            });
+
+            $("input[name='globalUnreadIndicatorCheckbox']").prop("checked", store.get("globalUnreadIndicator", false));
+            $("#globalUnreadIndicatorCheckbox").click(function() {
+                store.set("globalUnreadIndicator", $("input[name='globalUnreadIndicator']").prop("checked"));
+            });
+
+            
+
             $("input[name='hideMenubarIconCheckbox']").prop("checked", store.get("hideMenubarIcon", false));
             $("#hideMenubarIconCheckbox").click(function() {
                 store.set("hideMenubarIcon", $("input[name='hideMenubarIconCheckbox']").prop("checked"));
@@ -158,7 +182,14 @@
                 <label><input type="checkbox" name="notifyStreamCheckbox" id="notifyStreamCheckbox" value="0">Your Stream</input></label><br>
                 <label><input type="checkbox" name="notifyMentionsCheckbox" id="notifyMentionsCheckbox" value="1">Mentions</input></label><br>
                 <label><input type="checkbox" name="notifyInteractionsCheckbox" id="notifyInteractionsCheckbox" value="1">Interactions</input></label><br>
-                <label><input type="checkbox" name="notifyGlobalCheckbox" id="notifyGlobalCheckbox" value="0">Global</input></label>
+                <label><input type="checkbox" name="notifyGlobalCheckbox" id="notifyGlobalCheckbox" value="0">Global</input></label><br>
+                <br>
+                Indicate on the tab when unread posts exist:<br>
+                <br>
+                <label><input type="checkbox" name="streamUnreadIndicatorCheckbox" id="streamUnreadIndicatorCheckbox" value="1">Your Stream</input></label><br>
+                <label><input type="checkbox" name="mentionsUnreadIndicatorCheckbox" id="mentionsUnreadIndicatorCheckbox" value="1">Mentions</input></label><br>
+                <label><input type="checkbox" name="interactionsUnreadIndicatorCheckbox" id="interactionsUnreadIndicatorCheckbox" value="1">Interactions</input></label><br>
+                <label><input type="checkbox" name="globalUnreadIndicatorCheckbox" id="globalUnreadIndicatorCheckbox" value="0">Global</input></label><br>
             </p>
             <p>
                 <h1>Account</h1>

@@ -1059,7 +1059,17 @@
                             if (scrPos > 0 || $("#" + type).css("display") == "none") {
                                 if ($("#" + type + " .post-latest").length && latestId != 0) {
                                     $("#" + type).scrollTop(scrPos + $("#" + type + " .post-latest").outerHeight());
-                                    $("#" + type + "Button").addClass("unread-indicator");
+
+                                    if (type == "stream" && store.get("streamUnreadIndicator", true)) {
+                                        $("#streamButton").addClass("unread-indicator");
+                                    }
+                                    if (type == "mentions" && store.get("mentionsUnreadIndicator", true)) {
+                                        $("#mentionsButton").addClass("unread-indicator");
+                                    }
+                                    if (type == "global" && store.get("globalUnreadIndicator", false)) {
+                                        $("#globalButton").addClass("unread-indicator");
+                                    }
+                                    
                                 }
                             } else {
                                 $("#" + type).scrollTop($("#" + type + " .post-latest").outerHeight());
@@ -1809,7 +1819,10 @@
                             if (scrPos > 0 || $("#interactions").css("display") == "none") {
                                 if ($("#interactions .post-latest").length && latestInteractionsId != 0) {
                                     $("#interactions").scrollTop(scrPos + $("#interactions .post-latest").outerHeight());
-                                    $("#interactionsButton").addClass("unread-indicator");
+                                    
+                                    if (store.get("unreadIndicatorInteractions", true)) {
+                                        $("#interactionsButton").addClass("unread-indicator");
+                                    }
                                 }
                             } else {
                                 $("#interactions").scrollTop($("#interactions .post-latest").outerHeight());
