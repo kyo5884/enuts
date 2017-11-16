@@ -68,6 +68,14 @@
                         borderLeft: "1px solid #bbb"
                     });
                     $("#titlebar").css({backgroundColor: "#000"});
+
+                    $(".postthread-close").css({
+                        textAlign: "left",
+                        paddingLeft: "12px"
+                    });
+                    $("#backToStreamIcon").removeClass("fa-cheveron-left");
+                    $("#backToStreamIcon").addClass("fa-arrow-circle-left");
+
                     $("#titlebar-edge").css({left: "11px"});
                     $("body").append(
                         '<div id="windowControl">' +
@@ -520,7 +528,12 @@
                                     '</div>'
                                 );
 
-                                $
+                                if (process.platform != "darwin") {
+                                    $(".postthread-titlebar").css({
+                                        paddingLeft: "12px",
+                                        textAlign: "left"
+                                    });
+                                }
 
                                 $(".postthread, .postthread-titlebar").velocity({
                                     marginTop: "0px"
@@ -3052,7 +3065,7 @@
         </div>
 
         <div class="postthread-close">
-            <span class="fa fa-chevron-left"></span> Back to stream
+            <span id="backToStreamIcon" class="fa fa-chevron-left"></span> Back to stream
         </div>
     </body>
 </html>
