@@ -380,10 +380,11 @@ function createConfigWindow() {
   } else {
     configWindow = new BrowserWindow({
       width: 300,
-      height: 500,
+      height: 540,
       resizable: false,
       minimizable: false,
       maximizable: false,
+      titleBarStyle: "hidden-inset",
       show: false,
       title: "Preferences"
     });

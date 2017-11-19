@@ -8,11 +8,36 @@
         const app = require("electron").remote.app;
         const shell = require("electron").shell;
 
+        const token = store.get("token");
+
         window.jQuery = window.$ = require('./lib/jquery-3.1.1.min.js');
+        window.velocity = require("./lib/velocity.min.js");
 
         $(document).ready(function(){
 
             $("#versionText").text(app.getVersion());
+            
+            $.ajax({
+                url: "https://api.pnut.io/v0/users/me",
+                type: "GET",
+                headers: { Authorization: "Bearer " + token },
+                success: function(result) {
+                    console.log(result);
+                    $("#loggedInAsLabel").text("@" + result.data.username);
+                    $("#nameInput").val(result.data.name);
+                    $("#bioTextarea").text(result.data.content.markdown_text);
+                    $(".myAvatarImg").attr("src", result.data.content.avatar_image.link);
+                    $("header").css("background-image", "url(" + result.data.content.cover_image.link + ")");
+                }
+            })
+
+            $(window).scroll(function() {
+                if ($(window).scrollTop() < 80) {
+                    $("body").removeClass("header-scrolled");
+                } else {
+                    $("body").addClass("header-scrolled");
+                }
+            });
 
             if (process.platform == "darwin") {
                 $("#minimizeToTaskTrayLabel").hide();
@@ -22,9 +47,14 @@
                 $("#minimizeToTaskTrayLabel").show();
             }
 
+
+
             $("#reAuthButton").click(function() {
-                $("#reAuthInfoLabel").fadeIn();
-                store.delete("token");
+                var dialogResult = confirm("Are you sure want to logout?");
+                if (dialogResult) {
+                    $("#reAuthInfoLabel").fadeIn();
+                    store.delete("token");
+                }
             });
 
             $("input[name='updateCheckCheckbox']").prop("checked", store.get("updateCheck", true));
@@ -137,92 +167,210 @@
             outline: 0;
         }
 
-        #settings {
-            padding: 10px;
+        #titlebar {
+            height: 40px;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            opacity: 0;
+            background-color: #333;
+            transition: opacity 250ms linear;
+            -webkit-app-region: drag;
+            text-align: center;
+            color: white;
         }
 
-        h1 {
-            margin-bottom: 5px;
+        .header-scrolled #titlebar {
+            opacity: 1;
+        }
+
+        #titlebar span {
+            display: inline-block;
+            font-size: 11pt;
+            line-height: 40px;
+            height: 40px;
+            vertical-align: top;
+        }
+        
+        header {
+            height: 120px;
+            position: absolute;
+            z-index: 100;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #ccc;
+            background-size: cover;
+            background-position: center center;
+        }
+
+        #account .myAvatarImg {
+            width: 60px;
+            height: 60px;
+            border-radius: 100%;
+            vertical-align: bottom;
+        }
+
+        #loggedInAsLabel {
+            font-size: 16pt;
+        }
+
+        #account {
+            position: relative;
+            z-index: 110;
+            margin-top: calc(120px - 60px / 2);
+            padding: 0;
+            margin-left: 25px;
+            margin-right: 25px;
+        }
+
+        #profile {
+            padding-top: 10px;
+        }
+
+        #nameInput {
+            width: 100%;
+            border: none;
+            margin-bottom: 10px;
+        }
+
+        #bioTextarea {
+            resize: none;
+            outline: 0;
+            width: 100%;
+            height: 100px;
+            border: none;
+        }
+
+        #reAuthButton {
+            display: inline-block;
+            width: 100%;
+            text-align: right;
         }
 
         #reAuthInfoLabel {
             display: none;
         }
 
-        #about {
+
+        #loggedInAsLabel {
+            font-weight: bold;
+        }
+
+        section {
+            padding-left: 30px;
+            padding-right: 30px;
+            padding-top: 25px;
+        }
+
+        h1 {
+            margin-left: 0;
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-size: 18pt;
+        }
+
+        .about {
             text-align: center;
         }
 
+        #enutsIcon {
+            width: 128px;
+            height: 128px;
+        }
+
+        #enutsIcon {
+            animation: icon-anim 3s infinite ease-in-out;
+        }
+
+        @keyframes icon-anim {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.9); }
+            100% { transform: scale(1); }
+        }
+
         #credits {
+            margin-top: 40px;
             border-top: 1px solid #888;
-            padding: 0 10px;
+            background-color: #cae4eb;
+            padding-top: 20px;
+            padding-bottom: 20px;
         }
 
     </style>
 </head>
 <body>
-    <div id="settings">
-        <p>
-            <p>
-                <h1>Theme</h1>
-                <label><input type="radio" name="themeRadio" id="themeRadio" value="light" checked="checked"></input>Light</label><br>
-                <label><input type="radio" name="themeRadio" id="themeRadio" value="dark"></input>Dark</label><br>
-            </p>
-            <p>
-                <h1>Stream</h1>
-                <label><input type="checkbox" name="roundedIconCheckbox" id="roundedIconCheckbox" value="1"></input>Rounded Usericons</label><br>
-                <label><input type="checkbox" name="showDisplayNameCheckbox" id="showDisplayNameCheckbox" value="1"></input>Show user's name</label><br>
-                <label><input type="checkbox" name="absoluteDateCheckbox" id="absoluteDateCheckbox" value="0"></input>Use absolute date instead of relative date</label><br>
-                <label><input type="checkbox" name="includeDirectedPostsCheckbox" id="includeDirectedPostsCheckbox" value="0">Show mentions to unfollowed users in home stream</input></label><br>
-            </p>
-            <p>
-                <h1>Notifications</h1>
-                Let me notify when recieved new post in:<br>
-                <br>
-                <label><input type="checkbox" name="notifyStreamCheckbox" id="notifyStreamCheckbox" value="0">Your Stream</input></label><br>
-                <label><input type="checkbox" name="notifyMentionsCheckbox" id="notifyMentionsCheckbox" value="1">Mentions</input></label><br>
-                <label><input type="checkbox" name="notifyInteractionsCheckbox" id="notifyInteractionsCheckbox" value="1">Interactions</input></label><br>
-                <label><input type="checkbox" name="notifyGlobalCheckbox" id="notifyGlobalCheckbox" value="0">Global</input></label><br>
-                <br>
-                Indicate on the tab when unread posts exist:<br>
-                <br>
-                <label><input type="checkbox" name="streamUnreadIndicatorCheckbox" id="streamUnreadIndicatorCheckbox" value="1">Your Stream</input></label><br>
-                <label><input type="checkbox" name="mentionsUnreadIndicatorCheckbox" id="mentionsUnreadIndicatorCheckbox" value="1">Mentions</input></label><br>
-                <label><input type="checkbox" name="interactionsUnreadIndicatorCheckbox" id="interactionsUnreadIndicatorCheckbox" value="1">Interactions</input></label><br>
-                <label><input type="checkbox" name="globalUnreadIndicatorCheckbox" id="globalUnreadIndicatorCheckbox" value="0">Global</input></label><br>
-            </p>
-            <p>
-                <h1>Account</h1>
-                <button id="reAuthButton">Logout and Re-Authorize...</button><span id="reAuthInfoLabel">Please restart enuts and re-authorize.</span>
-            </p>
-            <p>
-                <h1>System</h1>
-                <label><input type="checkbox" name="updateCheckCheckbox" id="updateCheckCheckbox" value="1">Check new version at launch</input></label><br>
-                <label id="hideMenubarIconLabel"><input type="checkbox" name="hideMenubarIconCheckbox" id="hideMenubarIconCheckbox" value="0">Hide Menubar Icon</input></label>
-                <label id="minimizeToTaskTrayLabel"><input type="checkbox" name="minimizeToTaskTrayCheckbox" id="minimizeToTaskTrayCheckbox" value="0">Minimize To Tasktray</input></label>
-            </p>
-            Some settings need restart to take effect.<br>
-        </p>
+    <div id="titlebar">
+        <span>Preferences</span>
     </div>
-    <div id="credits">
-        <p id="about">
-            <img src="img/enuts_icon.png"><br>
-            <strong>enuts</strong><br>
-            by @kyo<br>
-            version <span id="versionText"></span><br>
-            <a href="http://kyo5884.tk/enuts/">kyo5884.tk/enuts/</a>
-        </p>
-        <p>
-            These components/libraries are used to make enuts.
-        </p>
-        <p>
-            Font Awesome<br>
-            autosize.js<br>
-            jQuery<br>
-            jQuery Easing Plugin<br>
-            velocity.js<br>
-            electron<br>
-            electron-store
-        </p>
+    <header>
+    </header>
+    <div id="settings">
+        <section id="account">
+            <img src="" class="myAvatarImg"> <label id="loggedInAsLabel"></label>
+        </section>
+        <section id="profile">
+            <input type="text" id="nameInput" placeholder="Your name"></input><br>
+            <textarea id="bioTextarea"></textarea><br>
+            <a href="#" id="reAuthButton">Logout...</a><br>
+            <span id="reAuthInfoLabel">Please restart enuts and re-authorize.</span>
+        </section>
+        <section>
+            <h1>Theme</h1>
+            <label><input type="radio" name="themeRadio" id="themeRadio" value="light" checked="checked"></input>Light</label><br>
+            <label><input type="radio" name="themeRadio" id="themeRadio" value="dark"></input>Dark</label><br>
+        </section>
+        <section>
+            <h1>Stream</h1>
+            <label><input type="checkbox" name="roundedIconCheckbox" id="roundedIconCheckbox" value="1"></input>Rounded Usericons</label><br>
+            <label><input type="checkbox" name="showDisplayNameCheckbox" id="showDisplayNameCheckbox" value="1"></input>Show user's name</label><br>
+            <label><input type="checkbox" name="absoluteDateCheckbox" id="absoluteDateCheckbox" value="0"></input>Use absolute date instead of relative date</label><br>
+            <label><input type="checkbox" name="includeDirectedPostsCheckbox" id="includeDirectedPostsCheckbox" value="0">Show mentions to unfollowed users in home stream</input></label><br>
+        </section>
+        <section>
+            <h1>Notifications</h1>
+            Let me notify when recieved new post in:<br>
+            <label><input type="checkbox" name="notifyStreamCheckbox" id="notifyStreamCheckbox" value="0">Your Stream</input></label><br>
+            <label><input type="checkbox" name="notifyMentionsCheckbox" id="notifyMentionsCheckbox" value="1">Mentions</input></label><br>
+            <label><input type="checkbox" name="notifyInteractionsCheckbox" id="notifyInteractionsCheckbox" value="1">Interactions</input></label><br>
+            <label><input type="checkbox" name="notifyGlobalCheckbox" id="notifyGlobalCheckbox" value="0">Global</input></label><br>
+            <br>
+            Indicate on the tab when unread posts exist:<br>
+            <label><input type="checkbox" name="streamUnreadIndicatorCheckbox" id="streamUnreadIndicatorCheckbox" value="1">Your Stream</input></label><br>
+            <label><input type="checkbox" name="mentionsUnreadIndicatorCheckbox" id="mentionsUnreadIndicatorCheckbox" value="1">Mentions</input></label><br>
+            <label><input type="checkbox" name="interactionsUnreadIndicatorCheckbox" id="interactionsUnreadIndicatorCheckbox" value="1">Interactions</input></label><br>
+            <label><input type="checkbox" name="globalUnreadIndicatorCheckbox" id="globalUnreadIndicatorCheckbox" value="0">Global</input></label><br>
+        </section>
+        <section>
+            <h1>System</h1>
+            <label><input type="checkbox" name="updateCheckCheckbox" id="updateCheckCheckbox" value="1">Check new version at launch</input></label><br>
+            <label id="hideMenubarIconLabel"><input type="checkbox" name="hideMenubarIconCheckbox" id="hideMenubarIconCheckbox" value="0">Hide Menubar Icon</input></label>
+            <label id="minimizeToTaskTrayLabel"><input type="checkbox" name="minimizeToTaskTrayCheckbox" id="minimizeToTaskTrayCheckbox" value="0">Minimize To Tasktray</input></label>
+        </section>
+        <section>
+            Some settings need restart to take effect.<br>  
+            </section>
+        <section id="credits">
+            <p class="about">
+                <img src="img/enuts_icon.png" id="enutsIcon"><br>
+                <strong>enuts</strong> <span id="versionText"></span><br>
+                by @kyo<br>
+                <a href="http://kyo5884.tk/enuts/">kyo5884.tk/enuts/</a>
+            </p>
+            <p>
+                These components/libraries are used to make enuts.
+            </p>
+            <p>
+                Font Awesome<br>
+                autosize.js<br>
+                jQuery<br>
+                jQuery Easing Plugin<br>
+                velocity.js<br>
+                electron<br>
+                electron-store
+            </p>
+        </section>
     </div>
 </body>
