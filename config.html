@@ -25,17 +25,22 @@
                 success: function(result) {
                     console.log(result);
                     $("#loggedInAsLabel").text("@" + result.data.username);
+
+                    $("#nameInput, #bioTextarea").attr("readonly", true);
                     $("#nameInput").val(result.data.name);
                     $("#bioTextarea").text(result.data.content.markdown_text);
+
                     $(".myAvatarImg").attr("src", result.data.content.avatar_image.link);
                     $("header").css("background-image", "url(" + result.data.content.cover_image.link + ")");
 
                     autosize($("#bioTextarea"));
                 }
-            })
+            });
 
-            $(window).scroll(function() {
-                if ($(window).scrollTop() < 80) {
+            if (process.platform != "darwin") { $("#titlebar").hide(); }
+
+            $("#settings").scroll(function() {
+                if ($("#settings").scrollTop() < 80) {
                     $("body").removeClass("header-scrolled");
                 } else {
                     $("body").addClass("header-scrolled");
@@ -196,6 +201,15 @@
             height: 40px;
             vertical-align: top;
         }
+
+        #settings {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow-y: scroll;
+        }
         
         header {
             height: 120px;
@@ -307,9 +321,9 @@
     <div id="titlebar">
         <span>Preferences</span>
     </div>
-    <header>
-    </header>
     <div id="settings">
+        <header>
+        </header>
         <section id="account">
             <img src="" class="myAvatarImg"> <label id="loggedInAsLabel"></label>
             <a href="#" id="reAuthButton">Logout...</a><br>
