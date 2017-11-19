@@ -378,12 +378,21 @@ function createConfigWindow() {
   if (configWindow != null) {
     configWindow.show();
   } else {
+    
+    var frame_;
+    if (process.platform == "darwin") {
+      frame_ = true;
+    } else {
+      frame_ = false;
+    }
+    
     configWindow = new BrowserWindow({
       width: 300,
       height: 540,
       resizable: false,
       minimizable: false,
       maximizable: false,
+      frame: frame_,
       titleBarStyle: "hidden-inset",
       show: false,
       title: "Preferences"
