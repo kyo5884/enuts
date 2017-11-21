@@ -1547,6 +1547,10 @@
                 }
             });
 
+            $(document).on("click", "#profileEditButton", function() {
+                ipcRenderer.send("openConfig");
+            });
+
             $(document).on("click", "#profileMuteButton", function() {
                 var userId = $("#profileUsername").text();
                 var action = "PUT";

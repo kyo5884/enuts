@@ -374,6 +374,10 @@ function createMainWindow() {
   Menu.setApplicationMenu(menu);
 }
 
+ipcMain.on("openConfig", () => {
+  createConfigWindow();
+});
+
 function createConfigWindow() {
   if (configWindow != null) {
     configWindow.show();
