@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <head>
+    <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
     <script>
 
         const ipcRenderer = require("electron").ipcRenderer;
@@ -17,25 +18,36 @@
         $(document).ready(function(){
 
             $("#versionText").text(app.getVersion());
+
+            var myBio, myName;
             
-            $.ajax({
-                url: "https://api.pnut.io/v0/users/me",
-                type: "GET",
-                headers: { Authorization: "Bearer " + token },
-                success: function(result) {
-                    console.log(result);
-                    $("#loggedInAsLabel").text("@" + result.data.username);
+            function getMyProfile() {
+                $.ajax({
+                    url: "https://api.pnut.io/v0/users/me",
+                    type: "GET",
+                    headers: { Authorization: "Bearer " + token },
+                    success: function(result) {
+                        console.log(result);
+                        $("#loggedInAsLabel").text("@" + result.data.username);
 
-                    $("#nameInput, #bioTextarea").attr("readonly", true);
-                    $("#nameInput").val(result.data.name);
-                    $("#bioTextarea").text(result.data.content.markdown_text);
+                        $("#nameInput, #bioTextarea").attr("readonly", true);
 
-                    $(".myAvatarImg").attr("src", result.data.content.avatar_image.link);
-                    $("header").css("background-image", "url(" + result.data.content.cover_image.link + ")");
+                        if (result.data.name !== undefined) {
+                            myName = result.data.name;
+                            $("#nameInput").val(myName);
+                        }
 
-                    autosize($("#bioTextarea"));
-                }
-            });
+                        myBio = result.data.content.markdown_text;
+                        $("#bioTextarea").val(myBio);
+
+                        $(".myAvatarImg").css("background-image", "url(" + result.data.content.avatar_image.link + ")");
+                        $("header").css("background-image", "url(" + result.data.content.cover_image.link + ")");
+
+                        autosize($("#bioTextarea"));
+                    }
+                });
+            }
+            getMyProfile();
 
             if (process.platform != "darwin") { $("#titlebar").hide(); }
 
@@ -55,7 +67,71 @@
                 $("#minimizeToTaskTrayLabel").show();
             }
 
+            $("#editProfileButton").click(function() {
+                if ($("header").hasClass("editable")) {
+                    saveProfile();
+                }
+                toggleEdit();
+            });
 
+            $("#profileEditCancelButton").click(function() {
+                $("#nameInput").val(myName);
+                $("#bioTextarea").val(myBio);
+                autosize.update($("#bioTextarea"));
+                toggleEdit();
+            });
+
+            $("#bioTextarea, #nameInput").focus(function() {
+                if ($("header").hasClass("editable")) {
+                } else {
+                    toggleEdit();
+                }
+            });
+
+            function saveProfile() {
+
+                var profileData = {
+                    name: $("#nameInput").val(),
+                    content: {
+                        text: $("#bioTextarea").val()
+                    }
+                }
+
+                $.ajax({
+                    url: "https://api.pnut.io/v0/users/me",
+                    type: "PATCH",
+                    headers: { Authorization: "Bearer " + token },
+                    data: JSON.stringify(profileData),
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function(result) {
+                        console.log(result);
+
+                        $("#nameInput, #bioTextarea").attr("readonly", true);
+                        $("header, #account, #profile").removeClass("editable");
+                        $("#editProfileButton").html('<span class="fa fa-pencil"></span>Edit your profile');
+                        $("#profileEditCancelButton").hide();
+                    },
+                    error: function(result) {
+                        console.log(result);
+                        alert(result.responseText);
+                    }
+                });
+            }
+
+            function toggleEdit() {
+                if ($("header").hasClass("editable")) {
+                    $("#nameInput, #bioTextarea").attr("readonly", true);
+                    $("header, #account, #profile").removeClass("editable");
+                    $("#editProfileButton").html('<span class="fa fa-pencil"></span>Edit your profile');
+                    $("#profileEditCancelButton").hide();
+                } else {
+                    $("#nameInput, #bioTextarea").attr("readonly", false);
+                    $("header, #account, #profile").addClass("editable");
+                    $("#editProfileButton").html('<span class="fa fa-check"></span>Save');
+                    $("#profileEditCancelButton").show();
+                }
+            }
 
             $("#reAuthButton").click(function() {
                 var dialogResult = confirm("Are you sure want to logout?");
@@ -171,6 +247,10 @@
             margin: 0;
         }
 
+        a {
+            color: #777;
+        }
+
         input {
             outline: 0;
         }
@@ -223,11 +303,51 @@
             background-position: center center;
         }
 
+        #selectCoverLabel {
+            display: none;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.5);
+            text-align: center;
+            line-height: 120px;
+            width: 100%;
+            font-size: 11pt;
+            cursor: pointer;
+            text-decoration: underline;
+            opacity: 0;
+            transition: opacity 250ms linear;
+        }
+        .editable #selectCoverLabel {
+            opacity: 1;
+            display: inline-block;
+        }
+
         #account .myAvatarImg {
+            display: inline-block;
+            background-size: cover;
             width: 60px;
             height: 60px;
+            line-height: 60px;
             border-radius: 100%;
             vertical-align: bottom;
+        }
+
+        #selectAvatarLabel {
+            display: none;
+            border-radius: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            color: white;
+            cursor: pointer;
+            text-decoration: underline;
+            transition: opacity 250ms linear;
+            opacity: 0;
+        }
+        .editable #selectAvatarLabel {
+            display: inline-block;
+            opacity: 1;
         }
 
         #loggedInAsLabel {
@@ -248,22 +368,32 @@
         }
 
         #nameInput {
-            width: 100%;
-            border: none;
-            margin-bottom: 10px;
-
+            width: auto;
+            font-size: 12pt;
+            /* margin-bottom: 10px; */
+            border: 1px transparent solid;
             background-color: inherit;
+
+            transition: border 250ms linear, background-color 250ms linear;
         }
 
         #bioTextarea {
             resize: none;
             outline: 0;
-            border: none;
+            border: 1px transparent solid;
             width: 100%;
             background-color: inherit;
+
+            transition: border 250ms linear, background-color 250ms linear;
         }
 
-        #reAuthButton {
+        .editable #bioTextarea, .editable #nameInput {
+            border: 1px #555 solid;
+            background-color: #fff;
+        }
+
+        #profileEditCancelButton {
+            display: none;
         }
 
         #reAuthInfoLabel {
@@ -323,14 +453,21 @@
     </div>
     <div id="settings">
         <header>
+            <!-- <input type="file" id="selectCoverLabel"></input> -->
         </header>
         <section id="account">
-            <img src="" class="myAvatarImg"> <label id="loggedInAsLabel"></label>
-            <a href="#" id="reAuthButton">Logout...</a><br>
+            <div class="myAvatarImg">
+                <!-- <input type="file" id="selectAvatarLabel"></input> -->
+            </div> 
+            <label id="loggedInAsLabel"></label>
+            <input type="text" id="nameInput" placeholder="What's your name?"></input>
         </section>
         <section id="profile">
-            <input type="text" id="nameInput" placeholder="Your name"></input><br>
-            <textarea id="bioTextarea"></textarea><br>
+            <textarea id="bioTextarea" placeholder="Please introduce yourself!"></textarea><br>
+            <a href="#" id="editProfileButton"><span class="fa fa-pencil"></span>Edit your profile</a>
+            <a href="#" id="profileEditCancelButton"><span class="fa fa-times"></span>Cancel</a><br>
+            <br>
+            <a href="#" id="reAuthButton"><span class="fa fa-sign-out"></span>Logout and Re-Authorize...</a><br>
             <span id="reAuthInfoLabel">Please restart enuts and re-authorize.</span>
         </section>
         <section>

@@ -380,9 +380,9 @@ function createConfigWindow() {
   } else {
     
     configWindow = new BrowserWindow({
-      width: 300,
-      height: 540,
-      resizable: false,
+      width: 360,
+      height: 650,
+      // resizable: false,
       minimizable: false,
       maximizable: false,
       titleBarStyle: "hidden-inset",
