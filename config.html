@@ -180,22 +180,22 @@
 
             $("input[name='streamUnreadIndicatorCheckbox']").prop("checked", store.get("streamUnreadIndicator", true));
             $("#streamUnreadIndicatorCheckbox").click(function() {
-                store.set("streamUnreadIndicator", $("input[name='streamUnreadIndicator']").prop("checked"));
+                store.set("streamUnreadIndicator", $("input[name='streamUnreadIndicatorCheckbox']").prop("checked"));
             });
 
             $("input[name='mentionsUnreadIndicatorCheckbox']").prop("checked", store.get("mentionsUnreadIndicator", true));
             $("#mentionsUnreadIndicatorCheckbox").click(function() {
-                store.set("mentionsUnreadIndicator", $("input[name='mentionsUnreadIndicator']").prop("checked"));
+                store.set("mentionsUnreadIndicator", $("input[name='mentionsUnreadIndicatorCheckbox']").prop("checked"));
             });
             
             $("input[name='interactionsUnreadIndicatorCheckbox']").prop("checked", store.get("interactionsUnreadIndicator", true));
             $("#interactionsUnreadIndicatorCheckbox").click(function() {
-                store.set("interactionsUnreadIndicator", $("input[name='interactionsUnreadIndicator']").prop("checked"));
+                store.set("interactionsUnreadIndicator", $("input[name='interactionsUnreadIndicatorCheckbox']").prop("checked"));
             });
 
             $("input[name='globalUnreadIndicatorCheckbox']").prop("checked", store.get("globalUnreadIndicator", false));
             $("#globalUnreadIndicatorCheckbox").click(function() {
-                store.set("globalUnreadIndicator", $("input[name='globalUnreadIndicator']").prop("checked"));
+                store.set("globalUnreadIndicator", $("input[name='globalUnreadIndicatorCheckbox']").prop("checked"));
             });
 
             
