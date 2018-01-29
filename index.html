@@ -282,7 +282,13 @@
                 });
 
                 $("#composeTextArea").bind('keydown keyup keypress change',function(){
-                    var remain = 256 - $(this).val().length;
+                    
+                    var lengthString = $(this).val();
+                    if ($(this).val().match('(?:__|[*#])|\[(.*?)\]\(.*?\)')) {
+                        lengthString = $(this).val().replace(/\[([^\]]+)\][^\)]+\)/g, '$1');
+                    }
+
+                    var remain = 256 - lengthString.length;
                     $("#composeCharRemain").text(remain);
                     if (remain < 0) {
                         $("#composeCharRemain").css("color", "red");
