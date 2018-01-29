@@ -4,7 +4,7 @@
   "description": "pnut.io desktop client",
   "main": "index.js",
   "dependencies": {
-    "electron-store": "^1.2.0"
+    "electron-store": "^1.3.0"
   },
   "author": "kyo5884"
 }
