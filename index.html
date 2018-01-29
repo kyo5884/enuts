@@ -176,14 +176,13 @@
                     var newVersion;
 
                     $.get({
-                        url: "http://kyo5884.tk/enuts/version.txt",
+                        url: "https://api.github.com/repos/kyo5884/enuts/releases/latest",
                         async: false,
                         cache: false
                     }, function(data) {
-                        newVersion = data;
-                        console.log(newVersion);
+                        newVersion = data.name;
 
-                        if (myVersion != newVersion) {
+                        if ('v' + myVersion != newVersion) {
                             $("#updateNotifyNewVersion").text(newVersion);
                             $("#updateNotify").velocity("slideDown");
                         }
