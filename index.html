@@ -26,6 +26,11 @@
             var latestMentionsPostId = 0;
             var latestInteractionsId = 0;
 
+            var loading_stream = false;
+            var loading_mentions = false;
+            var loading_global = false;
+            var loading_interactions = false;
+
             var irtPostId;
 
             var uploadFile = null;
@@ -896,6 +901,7 @@
 
                 switch (type) {
                     case "stream":
+                        if (loading_stream) return false;
                         typeUrl = "https://api.pnut.io/v0/posts/streams/me";
                         latestId = latestStreamPostId;
                         if (store.get("includeDirectedPosts", false)) {
@@ -903,16 +909,21 @@
                         } else {
                             includeDirectedPosts = 0;
                         }
+                        loading_stream = true;
                         break;
                     case "global":
+                        if (loading_global) return false;
                         typeUrl = "https://api.pnut.io/v0/posts/streams/global";
                         latestId = latestGlobalPostId;
                         includeDirectedPosts = 1;
+                        loading_global = true;
                         break;
                     case "mentions":
+                        if (loading_mentions) return false;
                         typeUrl = "https://api.pnut.io/v0/users/me/mentions";
                         latestId = latestMentionsPostId;
                         includeDirectedPosts = 1;
+                        loading_mentions = true;
                         break;
                 }
 
@@ -1086,6 +1097,10 @@
                             //$("#" + type + " .post:gt(200)").remove();
                         }
                         
+                    }, complete: function() {
+                        loading_global = false;
+                        loading_stream = false;
+                        loading_mentions = false;
                     }
                 });
     
@@ -1735,6 +1750,8 @@
 
             function getInteractions() {
                 console.log("getting interactions");
+                if (loading_interactions) return false;
+                loading_interactions = true;
                 $.ajax({
                     url: "https://api.pnut.io/v0/users/me/actions",
                     type: "GET",
@@ -1842,6 +1859,8 @@
                             latestInteractionsId = result.data[0].pagination_id;
 
                         }
+                    }, complete: function() {
+                        loading_interactions = false;
                     }
                 });
             }
