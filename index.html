@@ -411,7 +411,7 @@
                                                     if (result.data[i].raw[j].value.type == "photo") {
                                                         var imgUrl = result.data[i].raw[j].value.url;
                                                         if (imgUrl.startsWith("http")) {
-                                                            postImage = '<a href="' + imgUrl + '"><img class="postimage" src="' + imgUrl + '"></a><br>';
+                                                            postImage = postImage + '<a href="' + imgUrl + '"><img class="postimage" src="' + imgUrl + '"></a><br>';
                                                         }
                                                     }
                                                 }
@@ -421,7 +421,7 @@
                                             for (var j in result.data[i].content.entities.links) {
                                                 var url = result.data[i].content.entities.links[j].link;
                                                 if (url.match(/.*\.png|.*\.jpeg|.*\.jpg|.*\.gif/) && url.startsWith("http")) {
-                                                    postImage = '<a href="' + url + '"><img class="postimage" src="' + url + '"></a><br>';
+                                                    postImage = postImage + '<a href="' + url + '"><img class="postimage" src="' + url + '"></a><br>';
                                                 }
                                             }
                                         }
@@ -997,7 +997,7 @@
                                                 if (result.data[i].raw[j].value.type == "photo") {
                                                     var imgUrl = result.data[i].raw[j].value.url;
                                                     if (imgUrl.startsWith("http")) {
-                                                        postImage = '<a href="' + imgUrl + '"><img class="postimage" src="' + imgUrl + '"></a><br>';
+                                                        postImage = postImage + '<a href="' + imgUrl + '"><img class="postimage" src="' + imgUrl + '"></a><br>';
                                                     }
                                                 }
                                             }
@@ -1007,7 +1007,7 @@
                                         for (var j in result.data[i].content.entities.links) {
                                             var url = result.data[i].content.entities.links[j].link;
                                             if (url.match(/.*\.png|.*\.jpeg|.*\.jpg|.*\.gif/) && url.startsWith("http")) {
-                                                postImage = '<a href="' + url + '"><img class="postimage" src="' + url + '"></a><br>';
+                                                postImage = postImage + '<a href="' + url + '"><img class="postimage" src="' + url + '"></a><br>';
                                             }
                                         }
                                     }
@@ -1260,7 +1260,7 @@
                                                 if (result.data[i].raw[j].value.type == "photo") {
                                                     var imgUrl = result.data[i].raw[j].value.url;
                                                     if (imgUrl.startsWith("http")) {
-                                                        postImage = '<a href="' + imgUrl + '"><img class="postimage" src="' + imgUrl + '"></a><br>';
+                                                        postImage = postImage + '<a href="' + imgUrl + '"><img class="postimage" src="' + imgUrl + '"></a><br>';
                                                     }
                                                 }
                                             }
@@ -1270,7 +1270,7 @@
                                         for (var j in result.data[i].content.entities.links) {
                                             var url = result.data[i].content.entities.links[j].link;
                                             if (url.match(/.*\.png|.*\.jpeg|.*\.jpg|.*\.gif/) && url.startsWith("http")) {
-                                                postImage = '<a href="' + url + '"><img class="postimage" src="' + url + '"></a><br>';
+                                                postImage = postImage + '<a href="' + url + '"><img class="postimage" src="' + url + '"></a><br>';
                                             }
                                         }
                                     }
@@ -1362,7 +1362,7 @@
                                                 if (result.data[i].raw[j].value.type == "photo") {
                                                     var imgUrl = result.data[i].raw[j].value.url;
                                                     if (imgUrl.startsWith("http")) {
-                                                        postImage = '<a href="' + imgUrl + '"><img class="postimage" src="' + imgUrl + '"></a><br>';
+                                                        postImage = postImage + '<a href="' + imgUrl + '"><img class="postimage" src="' + imgUrl + '"></a><br>';
                                                     }
                                                 }
                                             }
@@ -1372,7 +1372,7 @@
                                         for (var j in result.data[i].content.entities.links) {
                                             var url = result.data[i].content.entities.links[j].link;
                                             if (url.match(/.*\.png|.*\.jpeg|.*\.jpg|.*\.gif/) && url.startsWith("http")) {
-                                                postImage = '<a href="' + url + '"><img class="postimage" src="' + url + '"></a><br>';
+                                                postImage = postImage + '<a href="' + url + '"><img class="postimage" src="' + url + '"></a><br>';
                                             }
                                         }
                                     }
@@ -1955,7 +1955,7 @@
                                                     if (result.data[i].raw[j].value.type == "photo") {
                                                         var imgUrl = result.data[i].raw[j].value.url;
                                                         if (imgUrl.startsWith("http")) {
-                                                            postImage = '<a href="' + imgUrl + '"><img class="postimage" src="' + imgUrl + '"></a><br>';
+                                                            postImage = postImage + '<a href="' + imgUrl + '"><img class="postimage" src="' + imgUrl + '"></a><br>';
                                                         }
                                                     }
                                                 }
@@ -1965,7 +1965,7 @@
                                             for (var j in result.data[i].content.entities.links) {
                                                 var url = result.data[i].content.entities.links[j].link;
                                                 if (url.match(/.*\.png|.*\.jpeg|.*\.jpg|.*\.gif/) && url.startsWith("http")) {
-                                                    postImage = '<a href="' + url + '"><img class="postimage" src="' + url + '"></a><br>';
+                                                    postImage = postImage + '<a href="' + url + '"><img class="postimage" src="' + url + '"></a><br>';
                                                 }
                                             }
                                         }
