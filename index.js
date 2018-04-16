@@ -78,7 +78,7 @@ function createMainWindow() {
     transparent: transparent_,
     frame: frame_,
     vibrancy: "dark",
-    titleBarStyle: "hidden-inset",
+    titleBarStyle: "hiddenInset",
     fullscreenable: false
   }
   Object.assign(options, store.get("windowBounds"));
@@ -389,7 +389,7 @@ function createConfigWindow() {
       // resizable: false,
       minimizable: false,
       maximizable: false,
-      titleBarStyle: "hidden-inset",
+      titleBarStyle: "hiddenInset",
       show: false,
       title: "Preferences"
     });
