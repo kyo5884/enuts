@@ -812,85 +812,86 @@
             }
 
             function composePost() {
-                $("#composeSpinner").velocity("fadeIn");
-                var postData = {};
+                $("#composeSpinner").velocity("fadeIn", {complete: function() {
+                    var postData = {};
 
-                if (uploadFile !== null) {
+                    if (uploadFile !== null) {
 
-                    var formData = new FormData();
-                    formData.append("type", "tk.kyo5884.enuts");
-                    formData.append("name", $("#composeTextArea").val());
-                    formData.append("kind", "image");
-                    formData.append("content", uploadFile);
+                        var formData = new FormData();
+                        formData.append("type", "tk.kyo5884.enuts");
+                        formData.append("name", $("#composeTextArea").val());
+                        formData.append("kind", "image");
+                        formData.append("content", uploadFile);
+
+                        $.ajax({
+                            url: "https://api.pnut.io/v0/files",
+                            type: "POST",
+                            async: false,
+                            contentType: false,
+                            processData: false,
+                            headers: { Authorization: "Bearer " + token },
+                            data: formData,
+                            success: function(result) {
+                                console.log("fileupload", result);
+                                
+                                postData = {
+                                    raw: [{
+                                        type: "io.pnut.core.oembed",
+                                        value: {
+                                            "+io.pnut.core.file": {
+                                                file_id: result.data.id,
+                                                file_token: result.data.file_token,
+                                                format: "oembed"
+                                            }
+                                        }
+                                    }]
+                                }
+
+                                $(".composeScreenFilePreview").remove();
+                                uploadFile = null;
+                                $("#composeScreenFile").val();
+                                $("label[for='composeScreenFile']").velocity("fadeIn");
+                            },
+                            error: function(result) {
+                                console.log("fileupload", result);
+                                return;
+                            }
+                        });
+                    }
+
+                    if (irtPostId) {
+                        postData["reply_to"] = irtPostId;
+                    }
+
+                    postData["text"] = $("#composeTextArea").val();
+                    postData["update_marker"] = 1;
 
                     $.ajax({
-                        url: "https://api.pnut.io/v0/files",
+                        url: "https://api.pnut.io/v0/posts?include_post_raw=1",
                         type: "POST",
                         async: false,
-                        contentType: false,
-                        processData: false,
                         headers: { Authorization: "Bearer " + token },
-                        data: formData,
+                        data: postData,
                         success: function(result) {
-                            console.log("fileupload", result);
-                            
-                            postData = {
-                                raw: [{
-                                    type: "io.pnut.core.oembed",
-                                    value: {
-                                        "+io.pnut.core.file": {
-                                            file_id: result.data.id,
-                                            file_token: result.data.file_token,
-                                            format: "oembed"
-                                        }
-                                    }
-                                }]
-                            }
+                            console.log(result);
+                            $("#composeTextArea").val("");
+                            $("#composeCharRemain").text("256");
+                            closeComposeScreen();
+                            getStream("stream");
+                            getStream("global");
+                            irtPostId = "";
 
-                            $(".composeScreenFilePreview").remove();
-                            uploadFile = null;
-                            $("#composeScreenFile").val();
-                            $("label[for='composeScreenFile']").velocity("fadeIn");
+                            postData = null;
                         },
                         error: function(result) {
-                            console.log("fileupload", result);
-                            return;
+                            console.log(result);
+                            alert($.parseJSON(result.responseText).meta.error_message);
+                            $("#composeSpinner").velocity("fadeOut");
+
+                            postData = null;
                         }
                     });
-                }
-
-                if (irtPostId) {
-                    postData["reply_to"] = irtPostId;
-                }
-
-                postData["text"] = $("#composeTextArea").val();
-                postData["update_marker"] = 1;
-
-                $.ajax({
-                    url: "https://api.pnut.io/v0/posts?include_post_raw=1",
-                    type: "POST",
-                    async: false,
-                    headers: { Authorization: "Bearer " + token },
-                    data: postData,
-                    success : function(result) {
-                        console.log(result);
-                        $("#composeTextArea").val("");
-                        $("#composeCharRemain").text("256");
-                        closeComposeScreen();
-                        getStream("stream");
-                        getStream("global");
-                        irtPostId = "";
-
-                        postData = null;
-                    },
-                    error: function(result) {
-                        console.log(result);
-                        alert(result.responseText);
-                        $("#composeSpinner").velocity("fadeOut");
-
-                        postData = null;
-                    }
-                });
+                }});
             }
 
             function getStream(type) {
@@ -1097,7 +1098,8 @@
 
                             //$("#" + type + " .post:gt(200)").remove();
                         }
-                        
+                    }, error: function(result) { 
+                        console.log(result);
                     }, complete: function() {
                         loading_global = false;
                         loading_stream = false;
