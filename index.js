@@ -210,10 +210,10 @@ function createMainWindow() {
           type: "separator"
         },
         {
-          label: 'Reload',
+          label: 'Refresh',
           accelerator: 'CmdOrCtrl+R',
           click: function () {
-            mainWindow.webContents.send("reload");
+            mainWindow.webContents.send("refresh");
           }
         },
         
@@ -238,7 +238,7 @@ function createMainWindow() {
 
         
         // {
-        //   label: 'Reload HTML',
+        //   label: 'Reload Window',
         //   accelerator: 'CmdOrCtrl+Shift+R',
         //   click: function (item, focusedWindow) {
         //     if (focusedWindow) focusedWindow.reload();
