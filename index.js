@@ -443,18 +443,17 @@ ipcMain.on("CreateAuthWindow", () => {
   authWindow.loadURL(authUrl);
   authWindow.setMenu(null);
   authWindow.show();
-  // 'will-navigate' is an event emitted when the window.location changes
-  // newUrl should contain the tokens you need
-  authWindow.webContents.on('did-get-redirect-request', (event, newUrl) => {
-
-    if (newUrl.match("http://kyo5884.tk/enuts/auth_done#access_token=")) {
-      token = newUrl.match(/#access_token=(.+)/)[1];
+  const ses = authWindow.webContents.session;
+  ses.webRequest.onBeforeRedirect((listener) => {
+    const newURL = listener.redirectURL;
+    if (newURL.match("http://kyo5884.tk/enuts/auth_done#access_token=")) {
+      token = newURL.match(/#access_token=(.+)/)[1];
       store.set("token", token);
       mainWindow.webContents.send("token", token);
       authWindow.close();
     }
   });
-
+  
   authWindow.on('closed', function() {
       authWindow = null;
   });
