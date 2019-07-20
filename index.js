@@ -438,7 +438,7 @@ ipcMain.on("CreateAuthWindow", () => {
       //'web-security': false
   });
   
-  var authUrl = "https://pnut.io/oauth/authenticate?client_id=RGO-QYfHmH_Sk7JxtMa1TS_m8M4tnvBI&redirect_uri=http://kyo5884.tk/enuts/auth_done&scope=basic stream write_post follow update_profile presence files&response_type=token";
+  var authUrl = "https://pnut.io/oauth/authenticate?client_id=RGO-QYfHmH_Sk7JxtMa1TS_m8M4tnvBI&redirect_uri=http://kyo5884.tk/enuts/auth_done&scope=stream,write_post,follow,update_profile,presence,files:tk.kyo5884.enuts&response_type=token";
 
   authWindow.loadURL(authUrl);
   authWindow.setMenu(null);
