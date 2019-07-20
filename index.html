@@ -1756,14 +1756,14 @@
                 if (loading_interactions) return false;
                 loading_interactions = true;
                 $.ajax({
-                    url: "https://api.pnut.io/v0/users/me/actions",
+                    url: "https://api.pnut.io/v0/users/me/interactions",
                     type: "GET",
                     headers : { Authorization: "Bearer " + token },
                     data: {
                         since_id: latestInteractionsId,
                         count: 200,
                         include_post_raw: 1,
-                        exclude: "reply"
+                        filters: "bookmark,repost,follow"
                     },
                     success: function(result) {
 
