@@ -84,6 +84,9 @@ function createMainWindow() {
     vibrancy: 'dark',
     titleBarStyle: 'hiddenInset',
     fullscreenable: false,
+    webPreferences: {
+      nodeIntegration: true,
+    },
   }
   Object.assign(options, store.get('windowBounds'))
   mainWindow = new BrowserWindow(options)
@@ -395,6 +398,9 @@ function createConfigWindow() {
       titleBarStyle: 'hiddenInset',
       show: false,
       title: 'Preferences',
+      webPreferences: {
+        nodeIntegration: true,
+      },
     })
     configWindow.loadURL('file://' + __dirname + '/config.html')
     configWindow.setMenu(null)
