@@ -1,529 +1,755 @@
 <!DOCTYPE html>
 <head>
-    <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css">
-    <script>
+  <link rel="stylesheet" href="font-awesome-4.7.0/css/font-awesome.min.css" />
+  <script>
+    const ipcRenderer = require('electron').ipcRenderer
+    const Store = require('electron-store')
+    const store = new Store()
+    const app = require('electron').remote.app
+    const shell = require('electron').shell
 
-        const ipcRenderer = require("electron").ipcRenderer;
-        const Store = require("electron-store");
-        const store = new Store();
-        const app = require("electron").remote.app;
-        const shell = require("electron").shell;
+    const token = store.get('token')
 
-        const token = store.get("token");
+    window.jQuery = window.$ = require('./lib/jquery-3.1.1.min.js')
+    window.velocity = require('./lib/velocity.min.js')
+    window.autosize = require('./lib/autosize.min.js')
 
-        window.jQuery = window.$ = require('./lib/jquery-3.1.1.min.js');
-        window.velocity = require("./lib/velocity.min.js");
-        window.autosize = require("./lib/autosize.min.js");
+    $(document).ready(function () {
+      $('#versionText').text(app.getVersion())
 
-        $(document).ready(function(){
+      var myBio, myName
+    
+      function getMyProfile() {
+        $.ajax({
+          url: 'https://api.pnut.io/v0/users/me',
+          type: 'GET',
+          headers: { Authorization: 'Bearer ' + token },
+          success: function (result) {
+            console.log(result)
+            $('#loggedInAsLabel').text('@' + result.data.username)
 
-            $("#versionText").text(app.getVersion());
+            $('#nameInput, #bioTextarea').attr('readonly', true)
 
-            var myBio, myName;
-            
-            function getMyProfile() {
-                $.ajax({
-                    url: "https://api.pnut.io/v0/users/me",
-                    type: "GET",
-                    headers: { Authorization: "Bearer " + token },
-                    success: function(result) {
-                        console.log(result);
-                        $("#loggedInAsLabel").text("@" + result.data.username);
-
-                        $("#nameInput, #bioTextarea").attr("readonly", true);
-
-                        if (result.data.name !== undefined) {
-                            myName = result.data.name;
-                            $("#nameInput").val(myName);
-                        }
-
-                        myBio = result.data.content.markdown_text;
-                        $("#bioTextarea").val(myBio);
-
-                        $(".myAvatarImg").css("background-image", "url(" + result.data.content.avatar_image.link + ")");
-                        $("header").css("background-image", "url(" + result.data.content.cover_image.link + ")");
-
-                        autosize($("#bioTextarea"));
-                    }
-                });
-            }
-            getMyProfile();
-
-            if (process.platform != "darwin") { $("#titlebar").hide(); }
-
-            $("#settings").scroll(function() {
-                if ($("#settings").scrollTop() < 80) {
-                    $("body").removeClass("header-scrolled");
-                } else {
-                    $("body").addClass("header-scrolled");
-                }
-            });
-
-            if (process.platform == "darwin") {
-                $("#minimizeToTaskTrayLabel").hide();
-            } else {
-                $("body").css("background-color", "#fff")
-                $("#hideMenubarIconLabel").hide();
-                $("#minimizeToTaskTrayLabel").show();
+            if (result.data.name !== undefined) {
+              myName = result.data.name
+              $('#nameInput').val(myName)
             }
 
-            $("#editProfileButton").click(function() {
-                if ($("header").hasClass("editable")) {
-                    saveProfile();
-                }
-                toggleEdit();
-            });
+            myBio = result.data.content.markdown_text
+            $('#bioTextarea').val(myBio)
 
-            $("#profileEditCancelButton").click(function() {
-                $("#nameInput").val(myName);
-                $("#bioTextarea").val(myBio);
-                autosize.update($("#bioTextarea"));
-                toggleEdit();
-            });
+            $('.myAvatarImg').css(
+              'background-image',
+              'url(' + result.data.content.avatar_image.link + ')'
+            )
+            $('header').css(
+              'background-image',
+              'url(' + result.data.content.cover_image.link + ')'
+            )
 
-            $("#bioTextarea, #nameInput").focus(function() {
-                if ($("header").hasClass("editable")) {
-                } else {
-                    toggleEdit();
-                }
-            });
+            autosize($('#bioTextarea'))
+          },
+        })
+      }
+      getMyProfile()
 
-            function saveProfile() {
+      if (process.platform != 'darwin') {
+        $('#titlebar').hide()
+      }
 
-                var profileData = {
-                    name: $("#nameInput").val(),
-                    content: {
-                        text: $("#bioTextarea").val()
-                    }
-                }
+      $('#settings').scroll(function () {
+        if ($('#settings').scrollTop() < 80) {
+          $('body').removeClass('header-scrolled')
+        } else {
+          $('body').addClass('header-scrolled')
+        }
+      })
 
-                $.ajax({
-                    url: "https://api.pnut.io/v0/users/me",
-                    type: "PATCH",
-                    headers: { Authorization: "Bearer " + token },
-                    data: JSON.stringify(profileData),
-                    contentType: "application/json",
-                    dataType: "json",
-                    success: function(result) {
-                        console.log(result);
+      if (process.platform == 'darwin') {
+        $('#minimizeToTaskTrayLabel').hide()
+      } else {
+        $('body').css('background-color', '#fff')
+        $('#hideMenubarIconLabel').hide()
+        $('#minimizeToTaskTrayLabel').show()
+      }
 
-                        $("#nameInput, #bioTextarea").attr("readonly", true);
-                        $("header, #account, #profile").removeClass("editable");
-                        $("#editProfileButton").html('<span class="fa fa-pencil"></span>Edit your profile');
-                        $("#profileEditCancelButton").hide();
-                    },
-                    error: function(result) {
-                        console.log(result);
-                        alert(result.responseText);
-                    }
-                });
-            }
+      $('#editProfileButton').click(function () {
+        if ($('header').hasClass('editable')) {
+          saveProfile()
+        }
+        toggleEdit()
+      })
 
-            function toggleEdit() {
-                if ($("header").hasClass("editable")) {
-                    $("#nameInput, #bioTextarea").attr("readonly", true);
-                    $("header, #account, #profile").removeClass("editable");
-                    $("#editProfileButton").html('<span class="fa fa-pencil"></span>Edit your profile');
-                    $("#profileEditCancelButton").hide();
-                } else {
-                    $("#nameInput, #bioTextarea").attr("readonly", false);
-                    $("header, #account, #profile").addClass("editable");
-                    $("#editProfileButton").html('<span class="fa fa-check"></span>Save');
-                    $("#profileEditCancelButton").show();
-                }
-            }
+      $('#profileEditCancelButton').click(function () {
+        $('#nameInput').val(myName)
+        $('#bioTextarea').val(myBio)
+        autosize.update($('#bioTextarea'))
+        toggleEdit()
+      })
 
-            $("#reAuthButton").click(function() {
-                var dialogResult = confirm("Are you sure want to logout?");
-                if (dialogResult) {
-                    $("#reAuthInfoLabel").fadeIn();
-                    store.delete("token");
-                }
-            });
+      $('#bioTextarea, #nameInput').focus(function () {
+        if ($('header').hasClass('editable')) {
+        } else {
+          toggleEdit()
+        }
+      })
 
-            $("input[name='updateCheckCheckbox']").prop("checked", store.get("updateCheck", true));
-            $("#updateCheckCheckbox").click(function() {
-                store.set("updateCheck", $("input[name='updateCheckCheckbox']").prop("checked"));
-            });
-
-            $("input[name='includeDirectedPostsCheckbox']").prop("checked", store.get("includeDirectedPosts", false));
-            $("#includeDirectedPostsCheckbox").click(function() {
-                store.set("includeDirectedPosts", $("input[name='includeDirectedPostsCheckbox']").prop("checked"));
-            });
-
-            $("input[name='absoluteDateCheckbox']").prop("checked", store.get("absoluteDate", false));
-            $("#absoluteDateCheckbox").click(function() {
-                store.set("absoluteDate", $("input[name='absoluteDateCheckbox']").prop("checked"));
-            });
-
-            $("input[name='notifyStreamCheckbox']").prop("checked", store.get("notifyStream", false));
-            $("#notifyStreamCheckbox").click(function() {
-                store.set("notifyStream", $("input[name='notifyStreamCheckbox']").prop("checked"));
-            });
-
-            $("input[name='notifyMentionsCheckbox']").prop("checked", store.get("notifyMentions", true));
-            $("#notifyMentionsCheckbox").click(function() {
-                store.set("notifyMentions", $("input[name='notifyMentionsCheckbox']").prop("checked"));
-            });
-
-            $("input[name='notifyInteractionsCheckbox']").prop("checked", store.get("notifyInteractions", true));
-            $("#notifyInteractionsCheckbox").click(function() {
-                store.set("notifyInteractions", $("input[name='notifyInteractionsCheckbox']").prop("checked"));
-            });
-
-            $("input[name='notifyGlobalCheckbox']").prop("checked", store.get("notifyGlobal", false));
-            $("#notifyGlobalCheckbox").click(function() {
-                store.set("notifyGlobal", $("input[name='notifyGlobalCheckbox']").prop("checked"));
-            });
-
-
-
-            $("input[name='streamUnreadIndicatorCheckbox']").prop("checked", store.get("streamUnreadIndicator", true));
-            $("#streamUnreadIndicatorCheckbox").click(function() {
-                store.set("streamUnreadIndicator", $("input[name='streamUnreadIndicatorCheckbox']").prop("checked"));
-            });
-
-            $("input[name='mentionsUnreadIndicatorCheckbox']").prop("checked", store.get("mentionsUnreadIndicator", true));
-            $("#mentionsUnreadIndicatorCheckbox").click(function() {
-                store.set("mentionsUnreadIndicator", $("input[name='mentionsUnreadIndicatorCheckbox']").prop("checked"));
-            });
-            
-            $("input[name='interactionsUnreadIndicatorCheckbox']").prop("checked", store.get("interactionsUnreadIndicator", true));
-            $("#interactionsUnreadIndicatorCheckbox").click(function() {
-                store.set("interactionsUnreadIndicator", $("input[name='interactionsUnreadIndicatorCheckbox']").prop("checked"));
-            });
-
-            $("input[name='globalUnreadIndicatorCheckbox']").prop("checked", store.get("globalUnreadIndicator", false));
-            $("#globalUnreadIndicatorCheckbox").click(function() {
-                store.set("globalUnreadIndicator", $("input[name='globalUnreadIndicatorCheckbox']").prop("checked"));
-            });
-
-            
-
-            $("input[name='hideMenubarIconCheckbox']").prop("checked", store.get("hideMenubarIcon", false));
-            $("#hideMenubarIconCheckbox").click(function() {
-                store.set("hideMenubarIcon", $("input[name='hideMenubarIconCheckbox']").prop("checked"));
-            });
-
-            $("input[name='minimizeToTaskTrayCheckbox']").prop("checked", store.get("minimizeToTaskTray", false));
-            $("#minimizeToTaskTrayCheckbox").click(function() {
-                store.set("minimizeToTaskTray", $("input[name='minimizeToTaskTrayCheckbox']").prop("checked"));
-            });
-
-            $("input[name='roundedIconCheckbox']").prop("checked", store.get("roundedIcon", true));
-            $("#roundedIconCheckbox").click(function() {
-                store.set("roundedIcon", $("input[name='roundedIconCheckbox']").prop("checked"));
-            });
-
-
-            $("input[name='showDisplayNameCheckbox']").prop("checked", store.get("showDisplayName", true));
-            $("#showDisplayNameCheckbox").click(function() {
-                store.set("showDisplayName", $("input[name='showDisplayNameCheckbox']").prop("checked"));
-            });
-
-            $("input[name='themeRadio']").val([store.get("theme", "light")]);
-            $("input[name='themeRadio']").click(function() {
-                store.set("theme", $("input[name='themeRadio']:checked").val());
-            });
-
-            $(document).on('click', 'a[href^="http"]', function(event) {
-                event.preventDefault();
-                shell.openExternal(this.href);
-            });
-
-            $(document).on('click', 'input', function() {
-                ipcRenderer.send("settingsUpdated");
-            });
-
-        });
-
-    </script>
-    <style type="text/css">
-        body {
-            font-family: sans-serif;
-            font-size: 9pt;
-            -webkit-user-select: none;
-            background-color: #eee;
-            margin: 0;
+      function saveProfile() {
+        var profileData = {
+          name: $('#nameInput').val(),
+          content: {
+            text: $('#bioTextarea').val(),
+          },
         }
 
-        a {
-            color: #777;
-        }
+        $.ajax({
+          url: 'https://api.pnut.io/v0/users/me',
+          type: 'PATCH',
+          headers: { Authorization: 'Bearer ' + token },
+          data: JSON.stringify(profileData),
+          contentType: 'application/json',
+          dataType: 'json',
+          success: function (result) {
+            console.log(result)
 
-        input {
-            outline: 0;
-        }
+            $('#nameInput, #bioTextarea').attr('readonly', true)
+            $('header, #account, #profile').removeClass('editable')
+            $('#editProfileButton').html(
+              '<span class="fa fa-pencil"></span>Edit your profile'
+            )
+            $('#profileEditCancelButton').hide()
+          },
+          error: function (result) {
+            console.log(result)
+            alert(result.responseText)
+          },
+        })
+      }
 
-        #titlebar {
-            height: 40px;
-            position: fixed;
-            z-index: 1000;
-            top: 0;
-            left: 0;
-            width: 100%;
-            opacity: 0;
-            background-color: #333;
-            transition: opacity 250ms linear;
-            -webkit-app-region: drag;
-            text-align: center;
-            color: white;
+      function toggleEdit() {
+        if ($('header').hasClass('editable')) {
+          $('#nameInput, #bioTextarea').attr('readonly', true)
+          $('header, #account, #profile').removeClass('editable')
+          $('#editProfileButton').html(
+            '<span class="fa fa-pencil"></span>Edit your profile'
+          )
+          $('#profileEditCancelButton').hide()
+        } else {
+          $('#nameInput, #bioTextarea').attr('readonly', false)
+          $('header, #account, #profile').addClass('editable')
+          $('#editProfileButton').html('<span class="fa fa-check"></span>Save')
+          $('#profileEditCancelButton').show()
         }
+      }
 
-        .header-scrolled #titlebar {
-            opacity: 1;
+      $('#reAuthButton').click(function () {
+        var dialogResult = confirm('Are you sure want to logout?')
+        if (dialogResult) {
+          $('#reAuthInfoLabel').fadeIn()
+          store.delete('token')
         }
+      })
 
-        #titlebar span {
-            display: inline-block;
-            font-size: 11pt;
-            line-height: 40px;
-            height: 40px;
-            vertical-align: top;
-        }
+      $("input[name='updateCheckCheckbox']").prop(
+        'checked',
+        store.get('updateCheck', true)
+      )
+      $('#updateCheckCheckbox').click(function () {
+        store.set(
+          'updateCheck',
+          $("input[name='updateCheckCheckbox']").prop('checked')
+        )
+      })
 
-        #settings {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            overflow-y: scroll;
-        }
-        
-        header {
-            height: 120px;
-            position: absolute;
-            z-index: 100;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #ccc;
-            background-size: cover;
-            background-position: center center;
-        }
+      $("input[name='includeDirectedPostsCheckbox']").prop(
+        'checked',
+        store.get('includeDirectedPosts', false)
+      )
+      $('#includeDirectedPostsCheckbox').click(function () {
+        store.set(
+          'includeDirectedPosts',
+          $("input[name='includeDirectedPostsCheckbox']").prop('checked')
+        )
+      })
 
-        #selectCoverLabel {
-            display: none;
-            color: white;
-            background-color: rgba(0, 0, 0, 0.5);
-            text-align: center;
-            line-height: 120px;
-            width: 100%;
-            font-size: 11pt;
-            cursor: pointer;
-            text-decoration: underline;
-            opacity: 0;
-            transition: opacity 250ms linear;
-        }
-        .editable #selectCoverLabel {
-            opacity: 1;
-            display: inline-block;
-        }
+      $("input[name='absoluteDateCheckbox']").prop(
+        'checked',
+        store.get('absoluteDate', false)
+      )
+      $('#absoluteDateCheckbox').click(function () {
+        store.set(
+          'absoluteDate',
+          $("input[name='absoluteDateCheckbox']").prop('checked')
+        )
+      })
 
-        #account .myAvatarImg {
-            display: inline-block;
-            background-size: cover;
-            width: 60px;
-            height: 60px;
-            line-height: 60px;
-            border-radius: 100%;
-            vertical-align: bottom;
-        }
+      $("input[name='notifyStreamCheckbox']").prop(
+        'checked',
+        store.get('notifyStream', false)
+      )
+      $('#notifyStreamCheckbox').click(function () {
+        store.set(
+          'notifyStream',
+          $("input[name='notifyStreamCheckbox']").prop('checked')
+        )
+      })
 
-        #selectAvatarLabel {
-            display: none;
-            border-radius: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            text-align: center;
-            width: 60px;
-            height: 60px;
-            line-height: 60px;
-            color: white;
-            cursor: pointer;
-            text-decoration: underline;
-            transition: opacity 250ms linear;
-            opacity: 0;
-        }
-        .editable #selectAvatarLabel {
-            display: inline-block;
-            opacity: 1;
-        }
+      $("input[name='notifyMentionsCheckbox']").prop(
+        'checked',
+        store.get('notifyMentions', true)
+      )
+      $('#notifyMentionsCheckbox').click(function () {
+        store.set(
+          'notifyMentions',
+          $("input[name='notifyMentionsCheckbox']").prop('checked')
+        )
+      })
 
-        #loggedInAsLabel {
-            font-size: 16pt;
-        }
+      $("input[name='notifyInteractionsCheckbox']").prop(
+        'checked',
+        store.get('notifyInteractions', true)
+      )
+      $('#notifyInteractionsCheckbox').click(function () {
+        store.set(
+          'notifyInteractions',
+          $("input[name='notifyInteractionsCheckbox']").prop('checked')
+        )
+      })
 
-        #account {
-            position: relative;
-            z-index: 110;
-            margin-top: calc(120px - 60px / 2);
-            padding: 0;
-            margin-left: 25px;
-            margin-right: 25px;
-        }
+      $("input[name='notifyGlobalCheckbox']").prop(
+        'checked',
+        store.get('notifyGlobal', false)
+      )
+      $('#notifyGlobalCheckbox').click(function () {
+        store.set(
+          'notifyGlobal',
+          $("input[name='notifyGlobalCheckbox']").prop('checked')
+        )
+      })
 
-        #profile {
-            padding-top: 10px;
-        }
+      $("input[name='streamUnreadIndicatorCheckbox']").prop(
+        'checked',
+        store.get('streamUnreadIndicator', true)
+      )
+      $('#streamUnreadIndicatorCheckbox').click(function () {
+        store.set(
+          'streamUnreadIndicator',
+          $("input[name='streamUnreadIndicatorCheckbox']").prop('checked')
+        )
+      })
 
-        #nameInput {
-            width: auto;
-            font-size: 12pt;
-            /* margin-bottom: 10px; */
-            border: 1px transparent solid;
-            background-color: inherit;
+      $("input[name='mentionsUnreadIndicatorCheckbox']").prop(
+        'checked',
+        store.get('mentionsUnreadIndicator', true)
+      )
+      $('#mentionsUnreadIndicatorCheckbox').click(function () {
+        store.set(
+          'mentionsUnreadIndicator',
+          $("input[name='mentionsUnreadIndicatorCheckbox']").prop('checked')
+        )
+      })
 
-            transition: border 250ms linear, background-color 250ms linear;
-        }
+      $("input[name='interactionsUnreadIndicatorCheckbox']").prop(
+        'checked',
+        store.get('interactionsUnreadIndicator', true)
+      )
+      $('#interactionsUnreadIndicatorCheckbox').click(function () {
+        store.set(
+          'interactionsUnreadIndicator',
+          $("input[name='interactionsUnreadIndicatorCheckbox']").prop('checked')
+        )
+      })
 
-        #bioTextarea {
-            resize: none;
-            outline: 0;
-            border: 1px transparent solid;
-            width: 100%;
-            background-color: inherit;
+      $("input[name='globalUnreadIndicatorCheckbox']").prop(
+        'checked',
+        store.get('globalUnreadIndicator', false)
+      )
+      $('#globalUnreadIndicatorCheckbox').click(function () {
+        store.set(
+          'globalUnreadIndicator',
+          $("input[name='globalUnreadIndicatorCheckbox']").prop('checked')
+        )
+      })
 
-            transition: border 250ms linear, background-color 250ms linear;
-        }
+      $("input[name='hideMenubarIconCheckbox']").prop(
+        'checked',
+        store.get('hideMenubarIcon', false)
+      )
+      $('#hideMenubarIconCheckbox').click(function () {
+        store.set(
+          'hideMenubarIcon',
+          $("input[name='hideMenubarIconCheckbox']").prop('checked')
+        )
+      })
 
-        .editable #bioTextarea, .editable #nameInput {
-            border: 1px #555 solid;
-            background-color: #fff;
-        }
+      $("input[name='minimizeToTaskTrayCheckbox']").prop(
+        'checked',
+        store.get('minimizeToTaskTray', false)
+      )
+      $('#minimizeToTaskTrayCheckbox').click(function () {
+        store.set(
+          'minimizeToTaskTray',
+          $("input[name='minimizeToTaskTrayCheckbox']").prop('checked')
+        )
+      })
 
-        #profileEditCancelButton {
-            display: none;
-        }
+      $("input[name='roundedIconCheckbox']").prop(
+        'checked',
+        store.get('roundedIcon', true)
+      )
+      $('#roundedIconCheckbox').click(function () {
+        store.set(
+          'roundedIcon',
+          $("input[name='roundedIconCheckbox']").prop('checked')
+        )
+      })
 
-        #reAuthInfoLabel {
-            display: none;
-        }
+      $("input[name='showDisplayNameCheckbox']").prop(
+        'checked',
+        store.get('showDisplayName', true)
+      )
+      $('#showDisplayNameCheckbox').click(function () {
+        store.set(
+          'showDisplayName',
+          $("input[name='showDisplayNameCheckbox']").prop('checked')
+        )
+      })
 
+      $("input[name='themeRadio']").val([store.get('theme', 'light')])
+      $("input[name='themeRadio']").click(function () {
+        store.set('theme', $("input[name='themeRadio']:checked").val())
+      })
 
-        #loggedInAsLabel {
-            font-weight: bold;
-        }
+      $(document).on('click', 'a[href^="http"]', function (event) {
+        event.preventDefault()
+        shell.openExternal(this.href)
+      })
 
-        section {
-            padding-left: 30px;
-            padding-right: 30px;
-            padding-top: 25px;
-        }
+      $(document).on('click', 'input', function () {
+        ipcRenderer.send('settingsUpdated')
+      })
+    })
+  </script>
+  <style type="text/css">
+    body {
+      font-family: sans-serif;
+      font-size: 9pt;
+      -webkit-user-select: none;
+      background-color: #eee;
+      margin: 0;
+    }
 
-        h1 {
-            margin-left: 0;
-            margin-top: 0;
-            margin-bottom: 5px;
-            font-size: 18pt;
-        }
+    a {
+      color: #777;
+    }
 
-        .about {
-            text-align: center;
-        }
+    input {
+      outline: 0;
+    }
 
-        #enutsIcon {
-            width: 128px;
-            height: 128px;
-        }
+    #titlebar {
+      height: 40px;
+      position: fixed;
+      z-index: 1000;
+      top: 0;
+      left: 0;
+      width: 100%;
+      opacity: 0;
+      background-color: #333;
+      transition: opacity 250ms linear;
+      -webkit-app-region: drag;
+      text-align: center;
+      color: white;
+    }
 
-        #enutsIcon {
-            animation: icon-anim 3s infinite ease-in-out;
-        }
+    .header-scrolled #titlebar {
+      opacity: 1;
+    }
 
-        @keyframes icon-anim {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.9); }
-            100% { transform: scale(1); }
-        }
+    #titlebar span {
+      display: inline-block;
+      font-size: 11pt;
+      line-height: 40px;
+      height: 40px;
+      vertical-align: top;
+    }
 
-        #credits {
-            margin-top: 40px;
-            border-top: 1px solid #888;
-            background-color: #cae4eb;
-            padding-top: 20px;
-            padding-bottom: 20px;
-        }
+    #settings {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow-y: scroll;
+    }
 
-    </style>
+    header {
+      height: 120px;
+      position: absolute;
+      z-index: 100;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #ccc;
+      background-size: cover;
+      background-position: center center;
+    }
+
+    #selectCoverLabel {
+      display: none;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.5);
+      text-align: center;
+      line-height: 120px;
+      width: 100%;
+      font-size: 11pt;
+      cursor: pointer;
+      text-decoration: underline;
+      opacity: 0;
+      transition: opacity 250ms linear;
+    }
+    .editable #selectCoverLabel {
+      opacity: 1;
+      display: inline-block;
+    }
+
+    #account .myAvatarImg {
+      display: inline-block;
+      background-size: cover;
+      width: 60px;
+      height: 60px;
+      line-height: 60px;
+      border-radius: 100%;
+      vertical-align: bottom;
+    }
+
+    #selectAvatarLabel {
+      display: none;
+      border-radius: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      text-align: center;
+      width: 60px;
+      height: 60px;
+      line-height: 60px;
+      color: white;
+      cursor: pointer;
+      text-decoration: underline;
+      transition: opacity 250ms linear;
+      opacity: 0;
+    }
+    .editable #selectAvatarLabel {
+      display: inline-block;
+      opacity: 1;
+    }
+
+    #loggedInAsLabel {
+      font-size: 16pt;
+    }
+
+    #account {
+      position: relative;
+      z-index: 110;
+      margin-top: calc(120px - 60px / 2);
+      padding: 0;
+      margin-left: 25px;
+      margin-right: 25px;
+    }
+
+    #profile {
+      padding-top: 10px;
+    }
+
+    #nameInput {
+      width: auto;
+      font-size: 12pt;
+      /* margin-bottom: 10px; */
+      border: 1px transparent solid;
+      background-color: inherit;
+
+      transition: border 250ms linear, background-color 250ms linear;
+    }
+
+    #bioTextarea {
+      resize: none;
+      outline: 0;
+      border: 1px transparent solid;
+      width: 100%;
+      background-color: inherit;
+
+      transition: border 250ms linear, background-color 250ms linear;
+    }
+
+    .editable #bioTextarea,
+    .editable #nameInput {
+      border: 1px #555 solid;
+      background-color: #fff;
+    }
+
+    #profileEditCancelButton {
+      display: none;
+    }
+
+    #reAuthInfoLabel {
+      display: none;
+    }
+
+    #loggedInAsLabel {
+      font-weight: bold;
+    }
+
+    section {
+      padding-left: 30px;
+      padding-right: 30px;
+      padding-top: 25px;
+    }
+
+    h1 {
+      margin-left: 0;
+      margin-top: 0;
+      margin-bottom: 5px;
+      font-size: 18pt;
+    }
+
+    .about {
+      text-align: center;
+    }
+
+    #enutsIcon {
+      width: 128px;
+      height: 128px;
+    }
+
+    #enutsIcon {
+      animation: icon-anim 3s infinite ease-in-out;
+    }
+
+    @keyframes icon-anim {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(0.9);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    #credits {
+      margin-top: 40px;
+      border-top: 1px solid #888;
+      background-color: #cae4eb;
+      padding-top: 20px;
+      padding-bottom: 20px;
+    }
+  </style>
 </head>
 <body>
-    <div id="titlebar">
-        <span>Preferences</span>
-    </div>
-    <div id="settings">
-        <header>
-            <!-- <input type="file" id="selectCoverLabel"></input> -->
-        </header>
-        <section id="account">
-            <div class="myAvatarImg">
-                <!-- <input type="file" id="selectAvatarLabel"></input> -->
-            </div> 
-            <label id="loggedInAsLabel"></label>
-            <input type="text" id="nameInput" placeholder="What's your name?"></input>
-        </section>
-        <section id="profile">
-            <textarea id="bioTextarea" placeholder="Please introduce yourself!"></textarea><br>
-            <a href="#" id="editProfileButton"><span class="fa fa-pencil"></span>Edit your profile</a>
-            <a href="#" id="profileEditCancelButton"><span class="fa fa-times"></span>Cancel</a><br>
-            <br>
-            <a href="#" id="reAuthButton"><span class="fa fa-sign-out"></span>Logout and Re-Authorize...</a><br>
-            <span id="reAuthInfoLabel">Please restart enuts and re-authorize.</span>
-        </section>
-        <section>
-            <h1>Theme</h1>
-            <label><input type="radio" name="themeRadio" id="themeRadio" value="light" checked="checked"></input>Light</label><br>
-            <label><input type="radio" name="themeRadio" id="themeRadio" value="dark"></input>Dark</label><br>
-        </section>
-        <section>
-            <h1>Stream</h1>
-            <label><input type="checkbox" name="roundedIconCheckbox" id="roundedIconCheckbox" value="1"></input>Rounded Usericons</label><br>
-            <label><input type="checkbox" name="showDisplayNameCheckbox" id="showDisplayNameCheckbox" value="1"></input>Show user's name</label><br>
-            <label><input type="checkbox" name="absoluteDateCheckbox" id="absoluteDateCheckbox" value="0"></input>Use absolute date instead of relative date</label><br>
-            <label><input type="checkbox" name="includeDirectedPostsCheckbox" id="includeDirectedPostsCheckbox" value="0">Show mentions to unfollowed users in home stream</input></label><br>
-        </section>
-        <section>
-            <h1>Notifications</h1>
-            Let me notify when recieved new post in:<br>
-            <label><input type="checkbox" name="notifyStreamCheckbox" id="notifyStreamCheckbox" value="0">Your Stream</input></label><br>
-            <label><input type="checkbox" name="notifyMentionsCheckbox" id="notifyMentionsCheckbox" value="1">Mentions</input></label><br>
-            <label><input type="checkbox" name="notifyInteractionsCheckbox" id="notifyInteractionsCheckbox" value="1">Interactions</input></label><br>
-            <label><input type="checkbox" name="notifyGlobalCheckbox" id="notifyGlobalCheckbox" value="0">Global</input></label><br>
-            <br>
-            Indicate on the tab when unread posts exist:<br>
-            <label><input type="checkbox" name="streamUnreadIndicatorCheckbox" id="streamUnreadIndicatorCheckbox" value="1">Your Stream</input></label><br>
-            <label><input type="checkbox" name="mentionsUnreadIndicatorCheckbox" id="mentionsUnreadIndicatorCheckbox" value="1">Mentions</input></label><br>
-            <label><input type="checkbox" name="interactionsUnreadIndicatorCheckbox" id="interactionsUnreadIndicatorCheckbox" value="1">Interactions</input></label><br>
-            <label><input type="checkbox" name="globalUnreadIndicatorCheckbox" id="globalUnreadIndicatorCheckbox" value="0">Global</input></label><br>
-        </section>
-        <section>
-            <h1>System</h1>
-            <label><input type="checkbox" name="updateCheckCheckbox" id="updateCheckCheckbox" value="1">Check new version at launch</input></label><br>
-            <label id="hideMenubarIconLabel"><input type="checkbox" name="hideMenubarIconCheckbox" id="hideMenubarIconCheckbox" value="0">Hide Menubar Icon</input></label>
-            <label id="minimizeToTaskTrayLabel"><input type="checkbox" name="minimizeToTaskTrayCheckbox" id="minimizeToTaskTrayCheckbox" value="0">Minimize To Tasktray</input></label>
-        </section>
-        <section>
-            Some settings need restart to take effect.<br>  
-            </section>
-        <section id="credits">
-            <p class="about">
-                <img src="img/enuts_icon.png" id="enutsIcon"><br>
-                <strong>enuts</strong> <span id="versionText"></span><br>
-                by @kyo<br>
-                <a href="http://kyo5884.tk/enuts/">kyo5884.tk/enuts/</a>
-            </p>
-            <p>
-                These components/libraries are used to make enuts.
-            </p>
-            <p>
-                Font Awesome<br>
-                autosize.js<br>
-                jQuery<br>
-                jQuery Easing Plugin<br>
-                velocity.js<br>
-                electron<br>
-                electron-store
-            </p>
-        </section>
-    </div>
+  <div id="titlebar">
+    <span>Preferences</span>
+  </div>
+  <div id="settings">
+    <header>
+      <!-- <input type="file" id="selectCoverLabel"></input> -->
+    </header>
+    <section id="account">
+      <div class="myAvatarImg">
+        <!-- <input type="file" id="selectAvatarLabel"></input> -->
+      </div>
+      <label id="loggedInAsLabel"></label>
+      <input type="text" id="nameInput" placeholder="What's your name?" />
+    </section>
+    <section id="profile">
+      <textarea
+        id="bioTextarea"
+        placeholder="Please introduce yourself!"
+      ></textarea
+      ><br />
+      <a href="#" id="editProfileButton"
+        ><span class="fa fa-pencil"></span>Edit your profile</a
+      >
+      <a href="#" id="profileEditCancelButton"
+        ><span class="fa fa-times"></span>Cancel</a
+      ><br />
+      <br />
+      <a href="#" id="reAuthButton"
+        ><span class="fa fa-sign-out"></span>Logout and Re-Authorize...</a
+      ><br />
+      <span id="reAuthInfoLabel">Please restart enuts and re-authorize.</span>
+    </section>
+    <section>
+      <h1>Theme</h1>
+      <label
+        ><input
+          type="radio"
+          name="themeRadio"
+          id="themeRadio"
+          value="light"
+          checked="checked"
+        />Light</label
+      ><br />
+      <label
+        ><input
+          type="radio"
+          name="themeRadio"
+          id="themeRadio"
+          value="dark"
+        />Dark</label
+      ><br />
+    </section>
+    <section>
+      <h1>Stream</h1>
+      <label
+        ><input
+          type="checkbox"
+          name="roundedIconCheckbox"
+          id="roundedIconCheckbox"
+          value="1"
+        />
+        />Rounded Usericons</label
+      ><br />
+      <label
+        ><input
+          type="checkbox"
+          name="showDisplayNameCheckbox"
+          id="showDisplayNameCheckbox"
+          value="1"
+        />Show user's name</label
+      ><br />
+      <label
+        ><input
+          type="checkbox"
+          name="absoluteDateCheckbox"
+          id="absoluteDateCheckbox"
+          value="0"
+        />Use absolute date instead of relative date</label
+      ><br />
+      <label
+        ><input
+          type="checkbox"
+          name="includeDirectedPostsCheckbox"
+          id="includeDirectedPostsCheckbox"
+          value="0"
+        />Show mentions to unfollowed users in home stream</label
+      ><br />
+    </section>
+    <section>
+      <h1>Notifications</h1>
+      Let me notify when recieved new post in:<br />
+      <label
+        ><input
+          type="checkbox"
+          name="notifyStreamCheckbox"
+          id="notifyStreamCheckbox"
+          value="0"
+        />Your Stream</label
+      ><br />
+      <label
+        ><input
+          type="checkbox"
+          name="notifyMentionsCheckbox"
+          id="notifyMentionsCheckbox"
+          value="1 /"
+        />Mentions</label
+      ><br />
+      <label
+        ><input
+          type="checkbox"
+          name="notifyInteractionsCheckbox"
+          id="notifyInteractionsCheckbox"
+          value="1"
+        />Interactions</label
+      ><br />
+      <label
+        ><input
+          type="checkbox"
+          name="notifyGlobalCheckbox"
+          id="notifyGlobalCheckbox"
+          value="0"
+        />Global</label
+      ><br />
+      <br />
+      Indicate on the tab when unread posts exist:<br />
+      <label
+        ><input
+          type="checkbox"
+          name="streamUnreadIndicatorCheckbox"
+          id="streamUnreadIndicatorCheckbox"
+          value="1"
+        />Your Stream</label
+      ><br />
+      <label
+        ><input
+          type="checkbox"
+          name="mentionsUnreadIndicatorCheckbox"
+          id="mentionsUnreadIndicatorCheckbox"
+          value="1"
+        />Mentions</label
+      ><br />
+      <label
+        ><input
+          type="checkbox"
+          name="interactionsUnreadIndicatorCheckbox"
+          id="interactionsUnreadIndicatorCheckbox"
+          value="1"
+        />Interactions</label
+      ><br />
+      <label
+        ><input
+          type="checkbox"
+          name="globalUnreadIndicatorCheckbox"
+          id="globalUnreadIndicatorCheckbox"
+          value="0"
+        />Global</label
+      ><br />
+    </section>
+    <section>
+      <h1>System</h1>
+      <label
+        ><input
+          type="checkbox"
+          name="updateCheckCheckbox"
+          id="updateCheckCheckbox"
+          value="1"
+        />Check new version at launch</label
+      ><br />
+      <label id="hideMenubarIconLabel"
+        ><input
+          type="checkbox"
+          name="hideMenubarIconCheckbox"
+          id="hideMenubarIconCheckbox"
+          value="0"
+        />Hide Menubar Icon</label
+      >
+      <label id="minimizeToTaskTrayLabel"
+        ><input
+          type="checkbox"
+          name="minimizeToTaskTrayCheckbox"
+          id="minimizeToTaskTrayCheckbox"
+          value="0"
+        />Minimize To Tasktray</label
+      >
+    </section>
+    <section>Some settings need restart to take effect.<br /></section>
+    <section id="credits">
+      <p class="about">
+        <img src="img/enuts_icon.png" id="enutsIcon" /><br />
+        <strong>enuts</strong> <span id="versionText"></span><br />
+        by @kyo<br />
+        <a href="http://kyo5884.tk/enuts/">kyo5884.tk/enuts/</a>
+      </p>
+      <p>
+        These components/libraries are used to make enuts.
+      </p>
+      <p>
+        Font Awesome<br />
+        autosize.js<br />
+        jQuery<br />
+        jQuery Easing Plugin<br />
+        velocity.js<br />
+        electron<br />
+        electron-store
+      </p>
+    </section>
+  </div>
 </body>
